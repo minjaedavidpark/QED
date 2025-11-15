@@ -67,9 +67,7 @@ export default function StudyPlanView({ plan }: StudyPlanViewProps) {
                     >
                       {topic}
                       {week.hours[topic] && (
-                        <span className="ml-2 text-xs text-blue-600">
-                          ({week.hours[topic]}h)
-                        </span>
+                        <span className="ml-2 text-xs text-blue-600">({week.hours[topic]}h)</span>
                       )}
                     </span>
                   ))}
@@ -86,7 +84,9 @@ export default function StudyPlanView({ plan }: StudyPlanViewProps) {
                   <p className="text-sm font-medium text-gray-700 mb-2">Checkpoint Questions:</p>
                   <ul className="list-disc list-inside space-y-1">
                     {week.checkpointQuestions.map((question, idx) => (
-                      <li key={idx} className="text-sm text-gray-600">{question}</li>
+                      <li key={idx} className="text-sm text-gray-600">
+                        {question}
+                      </li>
                     ))}
                   </ul>
                 </div>

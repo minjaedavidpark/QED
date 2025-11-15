@@ -181,7 +181,9 @@ This helps students understand their learning patterns and focus review time eff
 /**
  * Helper function to get the appropriate prompt for an agent type
  */
-export function getAgentPrompt(agentType: 'decomposer' | 'coach' | 'critic' | 'planner' | 'tracker'): string {
+export function getAgentPrompt(
+  agentType: 'decomposer' | 'coach' | 'critic' | 'planner' | 'tracker'
+): string {
   switch (agentType) {
     case 'decomposer':
       return DECOMPOSER_PROMPT;

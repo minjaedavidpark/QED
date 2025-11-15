@@ -85,18 +85,21 @@ The application uses specialized Claude agents:
 ## Key Features
 
 ### Guided Problem Solving (`/coach`)
+
 - Paste a problem to get step-by-step coaching
 - Socratic method: hints before answers
 - Progressive help levels
 - Solution reveal after genuine effort
 
 ### Solution Critique (`/critique`)
+
 - Submit problem + your solution
 - Get TA-style feedback
 - Identify logical gaps and errors
 - Structured improvement suggestions
 
 ### Study Planner (`/planner`)
+
 - Input course, topics, exam date, study hours
 - Get day-by-day schedule
 - Spaced repetition built-in
@@ -112,27 +115,32 @@ The application uses specialized Claude agents:
 ## Troubleshooting
 
 ### Build Errors
+
 - Make sure all dependencies are installed: `npm install`
 - Check TypeScript errors: `npm run build`
 
 ### API Errors
+
 - Verify your API key is set in `.env.local`
 - Check API key has sufficient credits
 - Review server logs for detailed error messages
 
 ### Styling Issues
+
 - Tailwind CSS should auto-compile
 - If styles aren't applying, restart the dev server
 
 ## Deployment
 
 ### Vercel (Recommended)
+
 1. Push code to GitHub
 2. Import project in Vercel
 3. Add `ANTHROPIC_API_KEY` environment variable
 4. Deploy!
 
 ### Other Platforms
+
 - Build: `npm run build`
 - Start: `npm start`
 - Ensure environment variables are set
@@ -140,6 +148,7 @@ The application uses specialized Claude agents:
 ## Academic Integrity
 
 This tool is for **learning and practice only**:
+
 - ✅ Use for understanding concepts
 - ✅ Practice problem-solving
 - ✅ Study for exams

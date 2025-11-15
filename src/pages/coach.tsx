@@ -17,7 +17,7 @@ export default function CoachPage() {
       const response = await fetch('/api/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ problem })
+        body: JSON.stringify({ problem }),
       });
 
       const data = await response.json();
@@ -30,8 +30,8 @@ export default function CoachPage() {
         {
           role: 'assistant',
           content: data.message,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       ]);
       setStarted(true);
     } catch (error) {
@@ -46,10 +46,10 @@ export default function CoachPage() {
     const newUserMessage: ChatMessage = {
       role: 'user',
       content: userMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, newUserMessage]);
+    setMessages((prev) => [...prev, newUserMessage]);
     setLoading(true);
 
     try {
@@ -57,11 +57,11 @@ export default function CoachPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, newUserMessage].map(m => ({
+          messages: [...messages, newUserMessage].map((m) => ({
             role: m.role,
-            content: m.content
-          }))
-        })
+            content: m.content,
+          })),
+        }),
       });
 
       const data = await response.json();
@@ -70,13 +70,13 @@ export default function CoachPage() {
         throw new Error(data.error || 'Failed to get response');
       }
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
           content: data.message,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       ]);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -100,9 +100,9 @@ export default function CoachPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: messages.map(m => ({ role: m.role, content: m.content })),
-          requestSolution: true
-        })
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+          requestSolution: true,
+        }),
       });
 
       const data = await response.json();
@@ -111,13 +111,13 @@ export default function CoachPage() {
         throw new Error(data.error || 'Failed to get solution');
       }
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
           content: data.message,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       ]);
     } catch (error) {
       console.error('Error requesting solution:', error);
@@ -138,9 +138,7 @@ export default function CoachPage() {
       <div className="max-w-4xl mx-auto">
         {/* Description */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            How it works
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">How it works</h2>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">1.</span>

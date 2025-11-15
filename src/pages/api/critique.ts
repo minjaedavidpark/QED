@@ -13,14 +13,11 @@ interface CritiqueResponse {
   error?: string;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<CritiqueResponse>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<CritiqueResponse>) {
   if (req.method !== 'POST') {
     return res.status(405).json({
       critique: 'Method not allowed',
-      error: 'Only POST requests are allowed'
+      error: 'Only POST requests are allowed',
     });
   }
 
@@ -30,7 +27,7 @@ export default async function handler(
     if (!problem || !solution) {
       return res.status(400).json({
         critique: 'Invalid request',
-        error: 'Both problem and solution are required'
+        error: 'Both problem and solution are required',
       });
     }
 
@@ -43,10 +40,9 @@ ${solution}
 
 Please analyze this solution and provide detailed feedback.`;
 
-    const critiqueResponse = await callClaude(
-      criticPrompt,
-      [{ role: 'user', content: critiqueRequest }]
-    );
+    const critiqueResponse = await callClaude(criticPrompt, [
+      { role: 'user', content: critiqueRequest },
+    ]);
 
     // Try to parse as JSON if it's structured
     let parsed;
@@ -59,14 +55,13 @@ Please analyze this solution and provide detailed feedback.`;
 
     return res.status(200).json({
       critique: critiqueResponse,
-      parsed
+      parsed,
     });
-
   } catch (error) {
     console.error('Error in critique API:', error);
     return res.status(500).json({
       critique: 'An error occurred',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }

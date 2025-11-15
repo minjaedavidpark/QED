@@ -28,16 +28,16 @@ export default function PlannerPage() {
     topics: '',
     examDate: '',
     weeklyHours: 10,
-    currentLevel: ''
+    currentLevel: '',
   });
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'weeklyHours' ? parseInt(value) || 0 : value
+      [name]: name === 'weeklyHours' ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -51,7 +51,7 @@ export default function PlannerPage() {
       const response = await fetch('/api/planner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -115,7 +115,10 @@ export default function PlannerPage() {
             <form onSubmit={handleGeneratePlan} className="space-y-5">
               {/* Course Name */}
               <div>
-                <label htmlFor="courseName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="courseName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Course Name
                 </label>
                 <input
@@ -151,7 +154,10 @@ export default function PlannerPage() {
               {/* Exam Date and Weekly Hours */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="examDate" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="examDate"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Exam Date
                   </label>
                   <input
@@ -168,7 +174,10 @@ export default function PlannerPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="weeklyHours" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="weeklyHours"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Weekly Study Hours
                   </label>
                   <input
@@ -188,7 +197,10 @@ export default function PlannerPage() {
 
               {/* Current Level (Optional) */}
               <div>
-                <label htmlFor="currentLevel" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="currentLevel"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Current Understanding Level (Optional)
                 </label>
                 <select
@@ -215,8 +227,20 @@ export default function PlannerPage() {
                 {loading ? (
                   <span className="flex items-center justify-center">
                     <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     Generating Your Plan...
                   </span>
@@ -245,9 +269,7 @@ export default function PlannerPage() {
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Your Study Plan</h3>
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap text-gray-700 font-sans">
-                    {plainTextPlan}
-                  </pre>
+                  <pre className="whitespace-pre-wrap text-gray-700 font-sans">{plainTextPlan}</pre>
                 </div>
               </div>
             )}

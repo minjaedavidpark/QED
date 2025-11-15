@@ -30,7 +30,7 @@ export default function CritiquePage() {
       const response = await fetch('/api/critique', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ problem, solution })
+        body: JSON.stringify({ problem, solution }),
       });
 
       const data = await response.json();
@@ -72,9 +72,7 @@ export default function CritiquePage() {
       <div className="max-w-4xl mx-auto">
         {/* Description */}
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Get TA-Style Feedback
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Get TA-Style Feedback</h2>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start">
               <span className="text-purple-600 mr-2">1.</span>
@@ -163,9 +161,7 @@ export default function CritiquePage() {
                 {/* Issues */}
                 {parsedCritique.issues && parsedCritique.issues.length > 0 && (
                   <div className="bg-white rounded-lg shadow-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">
-                      Issues to Address
-                    </h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Issues to Address</h3>
                     <div className="space-y-4">
                       {parsedCritique.issues.map((issue, idx) => (
                         <div
@@ -211,9 +207,7 @@ export default function CritiquePage() {
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Feedback</h3>
                 <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap text-gray-700 font-sans">
-                    {critique}
-                  </pre>
+                  <pre className="whitespace-pre-wrap text-gray-700 font-sans">{critique}</pre>
                 </div>
               </div>
             )}

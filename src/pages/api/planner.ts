@@ -16,14 +16,11 @@ interface PlannerResponse {
   error?: string;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<PlannerResponse>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<PlannerResponse>) {
   if (req.method !== 'POST') {
     return res.status(405).json({
       plan: 'Method not allowed',
-      error: 'Only POST requests are allowed'
+      error: 'Only POST requests are allowed',
     });
   }
 
@@ -33,14 +30,17 @@ export default async function handler(
     if (!courseName || !topics || !examDate || !weeklyHours) {
       return res.status(400).json({
         plan: 'Invalid request',
-        error: 'All fields (courseName, topics, examDate, weeklyHours) are required'
+        error: 'All fields (courseName, topics, examDate, weeklyHours) are required',
       });
     }
 
     // Calculate weeks until exam
     const now = new Date();
     const exam = new Date(examDate);
-    const weeksUntilExam = Math.max(1, Math.ceil((exam.getTime() - now.getTime()) / (7 * 24 * 60 * 60 * 1000)));
+    const weeksUntilExam = Math.max(
+      1,
+      Math.ceil((exam.getTime() - now.getTime()) / (7 * 24 * 60 * 60 * 1000))
+    );
 
     const plannerPrompt = getAgentPrompt('planner');
     const planningRequest = `Course: ${courseName}
@@ -72,14 +72,13 @@ Please create a comprehensive study plan for this student.`;
 
     return res.status(200).json({
       plan: planResponse,
-      parsed
+      parsed,
     });
-
   } catch (error) {
     console.error('Error in planner API:', error);
     return res.status(500).json({
       plan: 'An error occurred',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }

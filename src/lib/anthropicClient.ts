@@ -34,13 +34,13 @@ export async function callClaude(
       max_tokens: options?.maxTokens || 4096,
       temperature: options?.temperature || 1,
       system: systemPrompt,
-      messages: messages.map(msg => ({
+      messages: messages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       })),
     });
 
-    const textContent = response.content.find(block => block.type === 'text');
+    const textContent = response.content.find((block) => block.type === 'text');
     if (!textContent || textContent.type !== 'text') {
       throw new Error('No text content in response');
     }
@@ -71,21 +71,18 @@ export async function streamClaude(
       max_tokens: options?.maxTokens || 4096,
       temperature: options?.temperature || 1,
       system: systemPrompt,
-      messages: messages.map(msg => ({
+      messages: messages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       })),
     });
 
-    let fullResponse = '';
-
     stream.on('text', (text) => {
-      fullResponse += text;
       callback.onToken?.(text);
     });
 
     const finalMessage = await stream.finalMessage();
-    const textContent = finalMessage.content.find(block => block.type === 'text');
+    const textContent = finalMessage.content.find((block) => block.type === 'text');
     if (textContent && textContent.type === 'text') {
       callback.onComplete?.(textContent.text);
     }

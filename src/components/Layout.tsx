@@ -21,10 +21,7 @@ export default function Layout({ children, title }: LayoutProps) {
             </Link>
 
             <nav className="flex space-x-6">
-              <Link
-                href="/coach"
-                className="text-gray-600 hover:text-blue-600 transition-colors"
-              >
+              <Link href="/coach" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Coach
               </Link>
               <Link
@@ -46,11 +43,7 @@ export default function Layout({ children, title }: LayoutProps) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {title && (
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
-            {title}
-          </h1>
-        )}
+        {title && <h1 className="text-3xl font-bold text-gray-900 mb-6">{title}</h1>}
         {children}
       </main>
 
@@ -58,9 +51,7 @@ export default function Layout({ children, title }: LayoutProps) {
       <footer className="mt-16 border-t border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-sm text-gray-600">
-            <p>
-              Built for the Anthropic AI Hackathon @ UofT
-            </p>
+            <p>Built for the Anthropic AI Hackathon @ UofT</p>
             <p className="mt-2 text-xs text-gray-500">
               Use for learning and practice. Do not submit AI-generated work as your own.
             </p>

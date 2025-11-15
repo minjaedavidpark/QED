@@ -12,11 +12,11 @@ export default function Home() {
         'Break down tough questions into smaller steps',
         'Receive hints and guiding questions',
         'Build your reasoning muscles',
-        'Only see solutions after genuine effort'
+        'Only see solutions after genuine effort',
       ],
       href: '/coach',
       color: 'from-blue-500 to-blue-600',
-      hoverColor: 'hover:from-blue-600 hover:to-blue-700'
+      hoverColor: 'hover:from-blue-600 hover:to-blue-700',
     },
     {
       title: 'Solution Critique',
@@ -26,11 +26,11 @@ export default function Home() {
         'Identify logical gaps and unjustified steps',
         'Discover missing edge cases',
         'Understand what you did well',
-        'Get actionable improvement suggestions'
+        'Get actionable improvement suggestions',
       ],
       href: '/critique',
       color: 'from-purple-500 to-purple-600',
-      hoverColor: 'hover:from-purple-600 hover:to-purple-700'
+      hoverColor: 'hover:from-purple-600 hover:to-purple-700',
     },
     {
       title: 'Study Planner',
@@ -40,12 +40,12 @@ export default function Home() {
         'Day-by-day study plans',
         'Spaced repetition built-in',
         'Checkpoint questions for self-testing',
-        'Emphasize high-value topics'
+        'Emphasize high-value topics',
       ],
       href: '/planner',
       color: 'from-green-500 to-green-600',
-      hoverColor: 'hover:from-green-600 hover:to-green-700'
-    }
+      hoverColor: 'hover:from-green-600 hover:to-green-700',
+    },
   ];
 
   return (
@@ -57,23 +57,17 @@ export default function Home() {
             Reasoning Gym
           </span>
         </h1>
-        <p className="text-xl text-gray-600 mb-2">
-          Train Your Mind, Don&apos;t Just Get Answers
-        </p>
+        <p className="text-xl text-gray-600 mb-2">Train Your Mind, Don&apos;t Just Get Answers</p>
         <p className="text-sm text-gray-500 max-w-2xl mx-auto">
-          A multi-agent study coach powered by Claude that helps you <em>think</em> through hard problems
-          instead of just handing you the solution.
+          A multi-agent study coach powered by Claude that helps you <em>think</em> through hard
+          problems instead of just handing you the solution.
         </p>
       </div>
 
       {/* Mode Cards */}
       <div className="grid md:grid-cols-3 gap-8 mb-16">
         {modes.map((mode) => (
-          <Link
-            key={mode.title}
-            href={mode.href}
-            className="block group"
-          >
+          <Link key={mode.title} href={mode.href} className="block group">
             <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 h-full border border-gray-200 overflow-hidden">
               <div className={`bg-gradient-to-r ${mode.color} p-6 text-white`}>
                 <div className="text-4xl mb-3">{mode.emoji}</div>
@@ -81,9 +75,7 @@ export default function Home() {
               </div>
 
               <div className="p-6">
-                <p className="text-gray-600 mb-4">
-                  {mode.description}
-                </p>
+                <p className="text-gray-600 mb-4">{mode.description}</p>
 
                 <ul className="space-y-2 mb-6">
                   {mode.features.map((feature, idx) => (
@@ -94,7 +86,9 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <div className={`bg-gradient-to-r ${mode.color} ${mode.hoverColor} text-white font-semibold py-2 px-4 rounded-lg text-center transition-all`}>
+                <div
+                  className={`bg-gradient-to-r ${mode.color} ${mode.hoverColor} text-white font-semibold py-2 px-4 rounded-lg text-center transition-all`}
+                >
                   Get Started →
                 </div>
               </div>
@@ -105,9 +99,7 @@ export default function Home() {
 
       {/* Features Section */}
       <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 rounded-xl p-8 mb-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Why Reasoning Gym?
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Why Reasoning Gym?</h2>
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="flex items-start space-x-3">
@@ -115,7 +107,8 @@ export default function Home() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">Build Real Understanding</h3>
               <p className="text-sm text-gray-600">
-                Learn through guided discovery, not passive consumption. Develop problem-solving skills that last.
+                Learn through guided discovery, not passive consumption. Develop problem-solving
+                skills that last.
               </p>
             </div>
           </div>
@@ -157,9 +150,9 @@ export default function Home() {
         <div className="text-2xl mb-2">⚠️</div>
         <h3 className="font-semibold text-gray-900 mb-2">Academic Integrity Notice</h3>
         <p className="text-sm text-gray-700">
-          Reasoning Gym is designed to help you <strong>learn and practice</strong>.
-          Do not use it to complete graded assignments or take-home exams.
-          Always follow your institution&apos;s academic integrity policies.
+          Reasoning Gym is designed to help you <strong>learn and practice</strong>. Do not use it
+          to complete graded assignments or take-home exams. Always follow your institution&apos;s
+          academic integrity policies.
         </p>
       </div>
     </Layout>

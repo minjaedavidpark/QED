@@ -19,9 +19,9 @@ export default function ChatPanel({
   messages,
   onSendMessage,
   loading = false,
-  placeholder = "Type your response...",
+  placeholder = 'Type your response...',
   showSolutionButton = false,
-  onRequestSolution
+  onRequestSolution,
 }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -58,14 +58,14 @@ export default function ChatPanel({
             >
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                  message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
                 }`}
               >
                 <div className="whitespace-pre-wrap break-words">{message.content}</div>
                 {message.timestamp && (
-                  <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
+                  <div
+                    className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-100' : 'text-gray-500'}`}
+                  >
                     {message.timestamp.toLocaleTimeString()}
                   </div>
                 )}
@@ -77,9 +77,18 @@ export default function ChatPanel({
           <div className="flex justify-start">
             <div className="bg-gray-100 text-gray-900 rounded-lg px-4 py-3">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                ></div>
               </div>
             </div>
           </div>
