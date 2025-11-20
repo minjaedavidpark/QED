@@ -92,16 +92,23 @@ export default async function handler(
           const errorData = await manimResponse.json();
           log(`ERROR from Manim service: ${JSON.stringify(errorData)}`);
 
-          // Capture error for retry
-          lastError = errorData.details || errorData.error || 'Unknown Manim error';
+          // Only retry if it's a code execution error (usually 500 from Manim service with details)
+          // If it's a 400 (bad request) or other error, it might not be fixable by LLM
+          if (manimResponse.status === 500 && errorData.details) {
+            // Capture error for retry
+            lastError = errorData.details || errorData.error || 'Unknown Manim error';
 
-          // If it's the last attempt, throw to exit loop
-          if (attempt === MAX_RETRIES) {
-            throw new Error(`Manim service failed: ${lastError}`);
+            // If it's the last attempt, throw to exit loop
+            if (attempt === MAX_RETRIES) {
+              throw new Error(`Manim service failed: ${lastError}`);
+            }
+
+            // Continue to next iteration (retry)
+            continue;
+          } else {
+            // Non-retriable error (e.g. service down, bad request structure)
+            throw new Error(errorData.error || `Manim service error ${manimResponse.status}`);
           }
-
-          // Continue to next iteration (retry)
-          continue;
         }
 
         const result = await manimResponse.json();
@@ -117,11 +124,10 @@ export default async function handler(
         });
       } catch (error) {
         log(`Exception in attempt ${attempt}: ${error}`);
-        lastError = error instanceof Error ? error.message : String(error);
 
-        if (attempt === MAX_RETRIES) {
-          throw error;
-        }
+        // Don't retry on network errors (fetch failed) or other system errors
+        // Only retry if we explicitly 'continue'd from a Manim code error
+        throw error;
       }
     }
 

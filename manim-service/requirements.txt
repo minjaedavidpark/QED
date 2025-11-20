@@ -5,5 +5,5 @@ scipy>=1.13.0
 flask==3.0.3
 flask-cors==4.0.0
 dashscope>=1.24.6
-moviepy>=1.0.3
+moviepy<2.0.0
 gTTS>=2.5.1

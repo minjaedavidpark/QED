@@ -285,8 +285,20 @@ Be creative and make it educational!`;
     const code = codeMatch[1];
 
     // Extract explanation (text after the code block)
+    // Extract explanation (text after the code block)
     const parts = response.split('```');
-    const explanation = parts[parts.length - 1].trim() || 'Visualization generated';
+    let explanation = parts[parts.length - 1].trim();
+
+    // If explanation is empty or just "python", try looking before the code block or use a default
+    if (!explanation || explanation.toLowerCase() === 'python') {
+      // Try to find text that looks like an explanation (rhyming)
+      const potentialExplanation = response.replace(/```[\s\S]*?```/g, '').trim();
+      if (potentialExplanation.length > 10) {
+        explanation = potentialExplanation;
+      } else {
+        explanation = 'Visualization generated successfully.';
+      }
+    }
 
     // Comprehensive safety checks
     const dangerousPatterns = [
