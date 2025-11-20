@@ -1,4 +1,4 @@
-# Contributing to Reasoning Gym
+# Contributing to QED
 
 Thank you for your interest in contributing! This document provides guidelines for contributing to the project.
 
@@ -165,7 +165,7 @@ Before submitting a PR:
 
 ## Academic Integrity
 
-Remember that Reasoning Gym is designed to help students learn, not to enable academic dishonesty:
+Remember that QED is designed to help students learn, not to enable academic dishonesty:
 
 - Features should guide thinking, not replace it
 - Solutions should be earned through effort

@@ -53,7 +53,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="text-center mb-24 pt-12">
         <h1 className="text-7xl sm:text-8xl font-bold tracking-tight mb-6 animate-scale-in">
-          <span className="text-gradient">Reasoning Gym</span>
+          <span className="text-gradient">QED</span>
         </h1>
         <p className="text-2xl sm:text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-4 tracking-tight animate-fade-in">
           Train Your Mind, Don&apos;t Just Get Answers
@@ -134,7 +134,7 @@ export default function Home() {
       {/* Features Section */}
       <div className="rounded-3xl p-12 mb-24 border-2 border-blue-200/50 dark:border-gray-700/50 bg-gradient-to-br from-blue-50 via-purple-50/80 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
         <h2 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-12 text-center">
-          Why Reasoning Gym?
+          Why QED?
         </h2>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -196,9 +196,9 @@ export default function Home() {
           Academic Integrity Notice
         </h3>
         <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
-          Reasoning Gym is designed to help you <strong>learn and practice</strong>. Do not use it
-          to complete graded assignments or take-home exams. Always follow your institution&apos;s
-          academic integrity policies.
+          QED is designed to help you <strong>learn and practice</strong>. Do not use it to complete
+          graded assignments or take-home exams. Always follow your institution&apos;s academic
+          integrity policies.
         </p>
       </div>
     </Layout>

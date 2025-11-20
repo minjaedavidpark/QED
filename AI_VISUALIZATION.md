@@ -2,7 +2,7 @@
 
 ## Overview
 
-The ReasoningGym now features an advanced AI-powered visualization system that can generate mathematical animations for ANY complex problem using Manim (Mathematical Animation Engine).
+The QED now features an advanced AI-powered visualization system that can generate mathematical animations for ANY complex problem using Manim (Mathematical Animation Engine).
 
 ## How It Works
 

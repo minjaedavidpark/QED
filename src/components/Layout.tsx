@@ -21,7 +21,7 @@ export default function Layout({ children, title }: LayoutProps) {
                 🧠
               </span>
               <span className="text-xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                Reasoning Gym
+                QED
               </span>
             </Link>
 

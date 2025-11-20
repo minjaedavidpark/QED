@@ -1,6 +1,4 @@
-# Manim Visualization Service
-
-This service provides mathematical visualization capabilities for ReasoningGym using [Manim](https://github.com/3b1b/manim) - the animation engine created by 3Blue1Brown.
+This service provides mathematical visualization capabilities for QED using [Manim](https://github.com/3b1b/manim) - the animation engine created by 3Blue1Brown.
 
 ## What is Manim?
 
@@ -321,4 +319,4 @@ Modify the scene classes in `scene_generator.py`. See the [Manim documentation](
 
 ## License
 
-This service uses Manim (MIT License) and is part of the ReasoningGym project.
+This service uses Manim (MIT License) and is part of the QED project.

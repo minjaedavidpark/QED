@@ -1,10 +1,10 @@
-# 🧠 Reasoning Gym – Multi-Agent Study & Exam Coach
+# 🧠 QED – Multi-Agent Study & Exam Coach
 
 > **Track(s):**  
 > 🟦 Track 1 – Reasoning Systems (UofT AI)  
 > 🟩 General Track – Open Innovation
 
-Reasoning Gym is a **multi-agent study coach** powered by Claude that trains students to _think_ through hard problems instead of just handing them the answer.
+QED is a **multi-agent study coach** powered by Claude that trains students to _think_ through hard problems instead of just handing them the answer.
 
 Students can:
 
@@ -21,7 +21,7 @@ This project was built for the **Anthropic AI Hackathon @ UofT** (Nov 1–23, 20
 
 ### 1. Guided Problem Solving (Socratic Coach)
 
-Paste a problem (math / CS / econ / theory / etc.) and Reasoning Gym will:
+Paste a problem (math / CS / econ / theory / etc.) and QED will:
 
 - **Decompose** it into a sequence of reasoning steps
 - Guide you through each step with questions and hints
@@ -47,7 +47,7 @@ The system:
 
 ### 3. Study Planner for Courses & Exams
 
-Give Reasoning Gym:
+Give QED:
 
 - Course name (e.g. “CSC458 – Computer Networks”)
 - Topics or a rough syllabus
@@ -63,7 +63,7 @@ It will:
 
 ## 🧩 Multi-Agent Design
 
-Internally, Reasoning Gym uses **specialized Claude “agents”** implemented as separate prompt profiles:
+Internally, QED uses **specialized Claude “agents”** implemented as separate prompt profiles:
 
 - 🧩 **Decomposer Agent** – breaks problems into steps & required concepts
 - 🗣️ **Socratic Coach Agent** – interacts with the student step-by-step
@@ -77,7 +77,7 @@ The frontend orchestrates these agents via a simple backend API, so each mode ha
 
 ## 🛡️ Ethics & Academic Integrity
 
-Reasoning Gym is explicitly designed to **support learning**, not cheating.
+QED is explicitly designed to **support learning**, not cheating.
 
 We implement several guardrails:
 

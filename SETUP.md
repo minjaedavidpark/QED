@@ -152,7 +152,7 @@ The application uses specialized LLM agents (works with both Claude and GPT-4):
 
 ## Manim Visualizations (Optional)
 
-ReasoningGym includes an optional Manim integration for creating mathematical visualizations. This feature uses [Manim](https://github.com/3b1b/manim), the animation engine created by 3Blue1Brown.
+QED includes an optional Manim integration for creating mathematical visualizations. This feature uses [Manim](https://github.com/3b1b/manim), the animation engine created by 3Blue1Brown.
 
 ### Prerequisites
 

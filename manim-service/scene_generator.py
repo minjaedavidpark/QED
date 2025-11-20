@@ -1,5 +1,5 @@
 """
-Manim Scene Generator for ReasoningGym
+Manim Scene Generator for QED
 Generates mathematical visualizations based on problem descriptions
 """
 from manim import *
