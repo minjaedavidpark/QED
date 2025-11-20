@@ -9,6 +9,14 @@ import subprocess
 import uuid
 import shutil
 from pathlib import Path
+from dotenv import load_dotenv
+from tts_generator import generate_tts, combine_video_audio
+
+# Load environment variables from parent directory's .env.local
+parent_env = Path(__file__).parent.parent / '.env.local'
+if parent_env.exists():
+    load_dotenv(parent_env)
+    print(f"[ENV] Loaded environment from {parent_env}")
 
 # Ensure LaTeX is in PATH
 latex_path = "/Library/TeX/texbin"
@@ -35,16 +43,18 @@ def health_check():
 @app.route('/generate-dynamic', methods=['POST'])
 def generate_dynamic_visualization():
     """
-    Generate visualization using AI-generated Manim code
+    Generate visualization using AI-generated Manim code with optional TTS
 
     Request body:
     {
-        "code": "Python code with GeneratedScene class"
+        "code": "Python code with GeneratedScene class",
+        "narration": "Optional text for voice narration (TTS)"
     }
     """
     try:
         data = request.json
         code = data.get('code')
+        narration = data.get('narration', '')  # Optional TTS text
 
         if not code:
             return jsonify({"error": "No code provided"}), 400
@@ -100,15 +110,42 @@ def generate_dynamic_visualization():
                 "found_files": [str(p) for p in media_contents[:5]]
             }), 500
 
-        # Copy to public directory
+        # Generate TTS and combine with video if narration is provided
+        final_video_path = video_path
+        if narration:
+            print(f"[API] Generating TTS for narration...")
+            audio_path = MEDIA_DIR / f"{viz_id}_audio.wav"
+
+            # Generate TTS
+            if generate_tts(narration, audio_path):
+                # Combine video with audio
+                combined_path = MEDIA_DIR / f"{viz_id}_with_audio.mp4"
+                if combine_video_audio(video_path, audio_path, combined_path):
+                    final_video_path = combined_path
+                    print(f"[API] Successfully added voice narration to video")
+                else:
+                    print(f"[API] Failed to combine video and audio, using silent video")
+
+                # Clean up temporary audio file
+                if audio_path.exists():
+                    audio_path.unlink()
+            else:
+                print(f"[API] Failed to generate TTS, using silent video")
+
+        # Copy final video to public directory
         public_file = MEDIA_DIR / f"{viz_id}.mp4"
-        shutil.copy(video_path, public_file)
+        shutil.copy(final_video_path, public_file)
+
+        # Clean up temporary combined video if it was created
+        if final_video_path != video_path and final_video_path.exists():
+            final_video_path.unlink()
 
         return jsonify({
             "success": True,
             "video_id": viz_id,
             "video_url": f"/video/{viz_id}",
-            "file_path": str(public_file)
+            "file_path": str(public_file),
+            "has_audio": narration != '' and final_video_path != video_path
         })
 
     except subprocess.TimeoutExpired:
@@ -252,5 +289,14 @@ def cleanup():
 
 
 if __name__ == '__main__':
-    # Disable debug mode to prevent auto-reload when temp files are created
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    # Use stat reloader instead of watchdog to avoid restarts when
+    # media files are generated. Stat reloader only watches Python files.
+    os.environ['WERKZEUG_RUN_MAIN'] = os.environ.get('WERKZEUG_RUN_MAIN', 'false')
+
+    app.run(
+        host='0.0.0.0',
+        port=5001,
+        debug=True,
+        use_reloader=True,
+        reloader_type='stat'  # Only watches Python files, not media files
+    )

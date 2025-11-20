@@ -3,6 +3,8 @@ import { callLLM } from '@/lib/llmClient';
 
 interface GenerateCodeRequest {
   problem: string;
+  previousError?: string;
+  previousCode?: string;
 }
 
 interface GenerateCodeResponse {
@@ -14,19 +16,110 @@ interface GenerateCodeResponse {
 /**
  * Use AI to generate Manim code for visualizing any problem
  */
-async function generateManimCode(problem: string): Promise<{ code: string; explanation: string }> {
-  const systemPrompt = `You are an expert in creating Manim (Mathematical Animation Engine) visualizations.
+export async function generateManimCode(
+  problem: string,
+  previousError?: string,
+  previousCode?: string
+): Promise<{ code: string; explanation: string }> {
+  const systemPrompt = `You are an expert in creating Manim Community Edition (v0.19.0) visualizations.
 
-Your task is to generate Python code using Manim that visualizes the given problem in an educational and engaging way.
+Your task is to generate Python code using Manim that creates educational and engaging mathematical animations.
 
-REQUIREMENTS:
+HACKATHON AESTHETICS (WINNING STYLE):
+- Use a MODERN, DARK THEME.
+- Background: BLACK (default) or very dark gray.
+- Colors: Use vibrant, high-contrast colors: BLUE_E, TEAL_C, YELLOW_D, RED_D, MAROON_E, PURPLE_D.
+- Fonts: Use sans-serif fonts where possible.
+- Style: Clean, minimalist, professional. Avoid clutter.
+
+CORE REQUIREMENTS:
 1. Create a class called "GeneratedScene" that inherits from Scene
 2. Implement the construct() method with the visualization logic
-3. Use appropriate Manim objects: Text, MathTex, Circle, Square, Line, Dot, Graph, Axes, etc.
-4. Add smooth animations with self.play() and self.wait()
-5. Make it visually clear and educational
-6. Include labels, colors, and step-by-step progression
-7. Keep the total animation under 30 seconds
+3. Make animations 20-45 seconds to match narration length
+4. Use self.play() for animations and self.wait() for pauses (typically 1-2 seconds between steps)
+5. Focus on clarity and educational value
+6. CRITICAL: Break down complex problems into CLEAR STEPS - don't rush!
+7. Each step should be visible long enough to read and understand
+
+SCREEN SIZING (CRITICAL):
+- Default Manim resolution is 1920x1080 (16:9 aspect ratio)
+- Visible area: x from -7 to 7, y from -4 to 4
+- Keep ALL text and objects WITHIN these bounds
+- Use smaller font sizes for long equations: font_size=24-36 for normal text, 18-28 for small text
+- Scale down large objects to fit: use .scale(0.7) or .scale(0.5) if needed
+- Position objects carefully - test with .to_edge(), .next_to(), .shift()
+- Never let objects go off-screen!
+
+COORDINATE SYSTEM (CRITICAL):
+- Manim uses 3D coordinates: ALL points must be [x, y, z] or np.array([x, y, z])
+- Screen coordinates: origin at center, x-axis horizontal, y-axis vertical
+- Typical range: x from -7 to 7, y from -4 to 4
+- For 2D scenes, use z=0: [x, y, 0]
+- NEVER use 2D tuples (x, y) - this causes ValueError!
+- Examples:
+  ✓ Dot(point=[2, 1, 0])
+  ✓ Dot().move_to([3, -2, 0])
+  ✗ Dot(point=(2, 1))  # WRONG - will crash!
+
+MANIM OBJECTS - Use these correctly:
+Text & Math:
+- Text("...") for regular text
+- MathTex(r"x^2 + 1") for math equations (always use raw strings r"")
+- Tex(r"...") for LaTeX text
+- Use double backslashes \\\\ or raw strings r"" for LaTeX
+- IMPORTANT: When using Tex or MathTex, ensure valid LaTeX syntax!
+- Avoid using \\rightarrow inside Text() objects. Use MathTex(r"\\rightarrow") instead.
+
+Shapes & Geometry:
+- Dot(point=[x, y, 0], radius=0.1, color=BLUE)
+- Circle(radius=1, color=RED)
+- Rectangle(width=2, height=1)
+- Line(start=[x1, y1, 0], end=[x2, y2, 0])
+- Arrow(start=[x1, y1, 0], end=[x2, y2, 0])
+- Polygon([p1, p2, p3, ...])  # each point is [x, y, 0]
+
+Coordinate Systems:
+- Axes(x_range=[0, 5], y_range=[0, 10])
+- NumberLine(x_range=[0, 10], length=6)
+- NumberPlane()
+
+ANIMATION METHODS - Use proper Manim animations:
+Creation:
+- Create(object) - draws the object
+- Write(text) - writes text/math
+- FadeIn(object) - fades in
+- DrawBorderThenFill(shape) - for shapes
+
+Transformation:
+- Transform(obj1, obj2) - morphs obj1 into obj2
+- ReplacementTransform(obj1, obj2) - replaces obj1 with obj2
+- FadeTransform(obj1, obj2) - fade transition
+
+Movement & Modification:
+- object.animate.move_to([x, y, 0])
+- object.animate.shift([dx, dy, 0])
+- object.animate.scale(factor)
+- object.animate.rotate(angle)
+- Indicate(object) - highlights briefly
+- Flash(object) - flash effect
+
+Composition (for multiple animations):
+- AnimationGroup(anim1, anim2) - play together
+- Succession(anim1, anim2) - play sequentially
+- LaggedStart(anim1, anim2, lag_ratio=0.5) - staggered start
+
+COLORS - Use Manim's built-in colors:
+- RED, BLUE, GREEN, YELLOW, ORANGE, PURPLE, PINK
+- WHITE, BLACK, GRAY
+- TEAL, MAROON, GOLD
+- Use .set_color(COLOR) to change colors
+
+POSITIONING METHODS:
+- .to_edge(UP/DOWN/LEFT/RIGHT) - move to screen edge
+- .to_corner(UL/UR/DL/DR) - move to corner
+- .next_to(other, direction) - position relative to another object
+- .move_to([x, y, 0]) - move to specific coordinates
+- .shift([dx, dy, 0]) - move by offset
 
 IMPORTANT CODE STRUCTURE:
 \`\`\`python
@@ -41,46 +134,147 @@ class GeneratedScene(Scene):
         # Create engaging step-by-step visualizations
 \`\`\`
 
-EXAMPLES OF GOOD VISUALIZATIONS:
+EXAMPLE ANIMATION PATTERNS:
 
-For sorting:
-- Show array as rectangles with heights
-- Animate comparisons and swaps
-- Highlight elements being compared
-- Show final sorted state
+Simple Addition (2+3):
+\`\`\`python
+# Title
+title = Text("Addition: 2 + 3").to_edge(UP)
+self.play(Write(title))
 
-For graph algorithms:
-- Draw nodes as circles with labels
-- Draw edges as lines with weights
-- Animate the algorithm's path
-- Highlight visited nodes
+# Show equation
+equation = MathTex("2", "+", "3", "=", "?")
+self.play(Write(equation))
+self.wait()
 
-For TSP:
-- Show cities as labeled dots
-- Draw all edges with distances
-- Animate trying different paths
-- Highlight optimal path in green
+# Visual representation with dots
+dots_2 = VGroup(*[Dot([i, 0, 0], color=BLUE) for i in range(-1, 1)])
+dots_3 = VGroup(*[Dot([i, -1, 0], color=RED) for i in range(-1, 2)])
+self.play(FadeIn(dots_2), FadeIn(dots_3))
 
-For equations:
-- Show the equation
-- Animate step-by-step solving
-- Transform between steps
+# Combine and show result
+self.play(dots_3.animate.shift([0, 1, 0]))
+result = MathTex("2", "+", "3", "=", "5")
+self.play(ReplacementTransform(equation, result))
+\`\`\`
+
+Geometric Visualization:
+\`\`\`python
+# Create axes
+axes = Axes(x_range=[0, 5], y_range=[0, 5])
+self.play(Create(axes))
+
+# Add points (ALWAYS 3D!)
+p1 = Dot([1, 2, 0], color=RED)
+p2 = Dot([3, 4, 0], color=BLUE)
+self.play(FadeIn(p1), FadeIn(p2))
+
+# Draw line between them
+line = Line(start=[1, 2, 0], end=[3, 4, 0], color=YELLOW)
+self.play(Create(line))
+\`\`\`
+
+Array/List Visualization:
+\`\`\`python
+# Create array of rectangles
+values = [3, 1, 4, 2]
+rects = VGroup(*[
+    Rectangle(height=v*0.5, width=0.8, color=BLUE)
+    .move_to([i*1.2 - 2, v*0.25, 0])
+    for i, v in enumerate(values)
+])
+self.play(LaggedStart(*[Create(r) for r in rects], lag_ratio=0.2))
+\`\`\`
+
+Graph Algorithm:
+\`\`\`python
+# Create nodes as dots with labels
+nodes = {}
+positions = {"A": [-2, 1, 0], "B": [2, 1, 0], "C": [0, -1, 0]}
+for name, pos in positions.items():
+    dot = Dot(pos, radius=0.3, color=BLUE)
+    label = Text(name, font_size=24).move_to(pos)
+    nodes[name] = VGroup(dot, label)
+    self.play(FadeIn(nodes[name]))
+
+# Add edges
+edge = Line(start=[-2, 1, 0], end=[2, 1, 0], color=WHITE)
+self.play(Create(edge))
+\`\`\`
+
+Complex Math Concepts (Elliptic Curves, Number Theory):
+- DON'T try to compute exact solutions with large numbers
+- DO focus on explaining the CONCEPT visually
+- Show the equation/formula clearly with MathTex
+- Use simplified examples or symbolic representations
+- Explain each step with text annotations
+- Example: For elliptic curve y²=x³+ax+b, show the EQUATION and explain point addition VISUALLY, don't compute all points
+
+Equation Solving:
+\`\`\`python
+# Show original equation
+eq1 = MathTex(r"2x + 3 = 7")
+self.play(Write(eq1))
+self.wait()
+
+# Step 1: Subtract 3
+eq2 = MathTex(r"2x = 4")
+step1 = Text("Subtract 3 from both sides", font_size=20).to_edge(DOWN)
+self.play(Write(step1))
+self.play(ReplacementTransform(eq1, eq2))
+self.wait()
+
+# Step 2: Divide by 2
+eq3 = MathTex(r"x = 2", color=GREEN)
+step2 = Text("Divide by 2", font_size=20).to_edge(DOWN)
+self.play(ReplacementTransform(step1, step2))
+self.play(ReplacementTransform(eq2, eq3))
+\`\`\`
+
+CRITICAL REMINDERS:
+- Use r"" raw strings for all MathTex/Tex
+- ALL coordinates must be 3D: [x, y, 0]
+- Use VGroup to group related objects
+- Use proper animation methods (Create, Write, FadeIn, etc.)
+- Don't forget self.play() for animations and self.wait() for pauses
+- Use colors strategically to highlight important elements
+- Position objects clearly - use .to_edge(), .next_to(), .move_to()
+
+PACING FOR NARRATION SYNC:
+- SLOW DOWN! Add self.wait(1.5) or self.wait(2) between major steps
+- Each step should be on screen long enough for narration to explain it
+- Don't rush through transformations - use run_time=2 or run_time=3 for important animations
+- Example: self.play(Write(equation), run_time=2) then self.wait(1.5)
+- For explanations with 3-5 sentences, plan for 20-30 seconds of animation
+- Match visual changes to explanation flow - one animation per concept
+
+EXPLANATION STYLE (RHYMING NARRATION):
+- The explanation MUST be a rhyming poem that explains the math concepts shown.
+- Make it fun, educational, and rhythmic (AABB or ABAB rhyme scheme).
+- Keep it simple enough for students but accurate mathematically.
+- Example:
+  "To solve for x, we must be neat,
+   Subtracting three makes it complete.
+   Divide by two, and you will see,
+   The answer is plain as can be!"
 
 Respond with:
 1. The complete Python code (inside \`\`\`python code blocks)
-2. A brief explanation of what the visualization shows
+2. A brief explanation of what the visualization shows (THIS MUST BE THE RHYMING POEM)
 
 Be creative and make it educational!`;
 
+  let userMessage = `Generate a Manim visualization for this problem:\n\n${problem}`;
+
+  if (previousError && previousCode) {
+    userMessage += `\n\nPREVIOUS ATTEMPT FAILED:\n\nCode:\n${previousCode}\n\nError:\n${previousError}\n\nPlease fix the code to resolve this error. Ensure all syntax is correct and all objects are properly initialized.`;
+  }
+
   try {
-    const response = await callLLM(
-      systemPrompt,
-      [{ role: 'user', content: `Generate a Manim visualization for this problem:\n\n${problem}` }],
-      {
-        temperature: 0.7,
-        maxTokens: 2000,
-      }
-    );
+    const response = await callLLM(systemPrompt, [{ role: 'user', content: userMessage }], {
+      temperature: 0.7,
+      maxTokens: 2000,
+    });
 
     // Extract code from markdown code blocks
     const codeMatch = response.match(/```python\n([\s\S]*?)\n```/);
@@ -149,15 +343,21 @@ export default async function handler(
   }
 
   try {
-    const { problem }: GenerateCodeRequest = req.body;
+    const { problem, previousError, previousCode }: GenerateCodeRequest = req.body;
 
     console.log('[Generate Manim Code] Received request for problem:', problem?.substring(0, 100));
+    if (previousError) {
+      console.log(
+        '[Generate Manim Code] Retrying with previous error:',
+        previousError.substring(0, 100)
+      );
+    }
 
     if (!problem) {
       return res.status(400).json({ error: 'Problem is required' });
     }
 
-    const { code, explanation } = await generateManimCode(problem);
+    const { code, explanation } = await generateManimCode(problem, previousError, previousCode);
 
     console.log('[Generate Manim Code] Generated code length:', code.length);
     console.log('[Generate Manim Code] Explanation:', explanation);

@@ -1,0 +1,8 @@
+[2025-11-20T06:12:08.855Z] Handler started
+[2025-11-20T06:12:08.855Z] Received request for problem: Draw a pentagon
+[2025-11-20T06:12:08.855Z] Attempt 1/3
+[2025-11-20T06:12:08.855Z] Generating Manim code with AI...
+[2025-11-20T06:12:13.803Z] Generated code length: 1047
+[2025-11-20T06:12:13.803Z] Calling Manim service at: http://127.0.0.1:5001
+[2025-11-20T06:12:29.074Z] Manim response status: 200
+[2025-11-20T06:12:29.076Z] SUCCESS! Video ID: 9ab7f7e3-903c-4315-99df-79d145729813

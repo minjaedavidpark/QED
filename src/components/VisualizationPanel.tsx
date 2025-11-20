@@ -39,12 +39,23 @@ export default function VisualizationPanel({ problem, onVisualize }: Visualizati
       });
 
       console.log('[VisualizationPanel] Response status:', response.status);
-      const data = await response.json();
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('[VisualizationPanel] Failed to parse response JSON:', parseError);
+        if (!response.ok) {
+          throw new Error(`Server error (${response.status}): ${response.statusText}`);
+        }
+        throw new Error('Invalid response from server');
+      }
+
       console.log('[VisualizationPanel] Response data:', data);
 
       if (!response.ok) {
         console.error('[VisualizationPanel] Error response:', data);
-        throw new Error(data.error || 'Failed to generate visualization');
+        throw new Error(data.details || data.error || 'Failed to generate visualization');
       }
 
       console.log('[VisualizationPanel] Success! Video URL:', data.videoUrl);
