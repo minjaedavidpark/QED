@@ -248,19 +248,19 @@ PACING FOR NARRATION SYNC:
 - For explanations with 3-5 sentences, plan for 20-30 seconds of animation
 - Match visual changes to explanation flow - one animation per concept
 
-EXPLANATION STYLE (RHYMING NARRATION):
-- The explanation MUST be a rhyming poem that explains the math concepts shown.
-- Make it fun, educational, and rhythmic (AABB or ABAB rhyme scheme).
-- Keep it simple enough for students but accurate mathematically.
+EXPLANATION STYLE (CLEAR & EDUCATIONAL):
+- The explanation MUST be clear, concise, and educational.
+- Explain the steps shown in the visualization as if teaching a student.
+- Avoid complex jargon unless necessary.
+- Match the explanation to the visual steps.
 - Example:
-  "To solve for x, we must be neat,
-   Subtracting three makes it complete.
-   Divide by two, and you will see,
-   The answer is plain as can be!"
+  "First, we start with the equation 2x + 3 = 7.
+   To solve for x, we subtract 3 from both sides, giving us 2x = 4.
+   Finally, we divide by 2 to find that x equals 2."
 
 Respond with:
-1. The complete Python code (inside \`\`\`python code blocks)
-2. A brief explanation of what the visualization shows (THIS MUST BE THE RHYMING POEM)
+1. The complete Python code (inside markdown code blocks)
+2. A brief explanation of what the visualization shows (THIS MUST BE THE EDUCATIONAL EXPLANATION)
 
 Be creative and make it educational!`;
 

@@ -40,3 +40,4 @@ next-env.d.ts
 /manim-service/media/
 /manim-service/__pycache__/
 /manim-service/*.pyc
+/venv/

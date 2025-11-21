@@ -1,4 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -69,8 +73,44 @@ export default function ChatPanel({
                     : 'bg-gradient-to-br from-purple-100 via-blue-50 to-cyan-50 dark:from-purple-900/40 dark:via-blue-900/40 dark:to-cyan-900/40 border-2 border-purple-300/50 dark:border-purple-700/50 text-gray-800 dark:text-gray-200'
                 }`}
               >
-                <div className="whitespace-pre-wrap break-words leading-relaxed">
-                  {message.content}
+                <div className="markdown-content leading-relaxed">
+                  {message.role === 'user' ? (
+                    <div className="whitespace-pre-wrap break-words">{message.content}</div>
+                  ) : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                        ol: ({ children }) => (
+                          <ol className="list-decimal ml-4 mb-2">{children}</ol>
+                        ),
+                        li: ({ children }) => <li className="mb-1">{children}</li>,
+                        h1: ({ children }) => (
+                          <h1 className="text-xl font-bold mb-2 mt-4">{children}</h1>
+                        ),
+                        h2: ({ children }) => (
+                          <h2 className="text-lg font-bold mb-2 mt-3">{children}</h2>
+                        ),
+                        h3: ({ children }) => (
+                          <h3 className="text-base font-bold mb-1 mt-2">{children}</h3>
+                        ),
+                        blockquote: ({ children }) => (
+                          <blockquote className="border-l-4 border-blue-300 pl-4 italic my-2">
+                            {children}
+                          </blockquote>
+                        ),
+                        code: ({ children }) => (
+                          <code className="bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 text-sm font-mono">
+                            {children}
+                          </code>
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  )}
                 </div>
                 {message.timestamp && (
                   <div

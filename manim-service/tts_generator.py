@@ -7,10 +7,37 @@ import dashscope
 from dashscope.audio.tts_v2 import SpeechSynthesizer
 
 
+import re
+
+def strip_markdown(text: str) -> str:
+    """
+    Remove Markdown formatting from text for TTS
+    """
+    # Remove headers
+    text = re.sub(r'^#+\s+', '', text, flags=re.MULTILINE)
+    # Remove bold/italic
+    text = re.sub(r'\*\*|__|\*|_', '', text)
+    # Remove code blocks
+    text = re.sub(r'```[\s\S]*?```', '', text)
+    text = re.sub(r'`[^`]*`', '', text)
+    # Remove images ![alt](url) -> ''
+    text = re.sub(r'!\[[^\]]*\]\([^\)]+\)', '', text)
+    # Remove links [text](url) -> text
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    # Remove blockquotes
+    text = re.sub(r'^>\s+', '', text, flags=re.MULTILINE)
+    # Remove LaTeX math delimiters (optional, but good for TTS)
+    text = re.sub(r'\$+', '', text)
+    # Remove backslashes
+    text = text.replace('\\', '')
+    
+    return text.strip()
+
+
 def generate_tts(text: str, output_path: Path, voice: str = "longxiaochun", speech_rate: int = 0) -> bool:
     """
     Generate TTS audio using QWEN's DashScope API
-
+    
     Args:
         text: Text to convert to speech
         output_path: Path where audio file will be saved
@@ -18,21 +45,32 @@ def generate_tts(text: str, output_path: Path, voice: str = "longxiaochun", spee
                Other options: longxiaochun, longwan, longyuan, longshuo, etc.
         speech_rate: Speech rate adjustment (-500 to 500, 0 is normal)
                     Negative = slower, Positive = faster
-
+    
     Returns:
         bool: True if successful, False otherwise
     """
     try:
+        # Clean text for TTS
+        clean_text = strip_markdown(text)
+        print(f"[TTS] Original text length: {len(text)}, Cleaned text length: {len(clean_text)}")
+        
+        if not clean_text:
+            print("[TTS] Warning: Cleaned text is empty! Falling back to original text.")
+            clean_text = text
+            if not clean_text:
+                print("[TTS] Error: No text to generate speech from.")
+                return False
+        
         # Get API key from environment
         api_key = os.getenv('QWEN_API_KEY')
         
         # Try Qwen TTS if API key is present
         if api_key:
             try:
-                print(f"[TTS] Attempting Qwen TTS for text: {text[:50]}...")
+                print(f"[TTS] Attempting Qwen TTS for text: {clean_text[:50]}...")
                 dashscope.api_key = api_key
                 synthesizer = SpeechSynthesizer(model='cosyvoice-v1', voice=voice)
-                audio_data = synthesizer.call(text)
+                audio_data = synthesizer.call(clean_text)
                 if audio_data:
                     with open(output_path, 'wb') as f:
                         f.write(audio_data)
@@ -47,8 +85,8 @@ def generate_tts(text: str, output_path: Path, voice: str = "longxiaochun", spee
         # Fallback to gTTS
         try:
             from gtts import gTTS
-            print(f"[TTS] Generating audio with gTTS for text: {text[:50]}...")
-            tts = gTTS(text=text, lang='en', slow=False)
+            print(f"[TTS] Generating audio with gTTS for text: {clean_text[:50]}...")
+            tts = gTTS(text=clean_text, lang='en', slow=False)
             tts.save(str(output_path))
             print(f"[TTS] gTTS success. Audio saved to {output_path}")
             return True
@@ -76,7 +114,7 @@ def combine_video_audio(video_path: Path, audio_path: Path, output_path: Path) -
         bool: True if successful, False otherwise
     """
     try:
-        from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
+        from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip, concatenate_videoclips
 
         print(f"[TTS] Combining video {video_path} with audio {audio_path}...")
 
@@ -86,24 +124,23 @@ def combine_video_audio(video_path: Path, audio_path: Path, output_path: Path) -
 
         print(f"[TTS] Video duration: {video.duration:.2f}s, Audio duration: {audio.duration:.2f}s")
 
-        # Strategy: If audio is longer than video, extend video's last frame
-        # If video is longer than audio, keep video as is (silent after audio)
+        # Strategy: Trim audio to match video duration if needed
         final_video = video
         final_audio = audio
-
+        
         if audio.duration > video.duration:
-            # Audio is longer - we need to extend the video or trim audio
-            # For now, trim audio to match video to avoid extending video
-            print(f"[TTS] Audio longer than video, trimming audio to {video.duration:.2f}s")
+            # Audio is longer - trim it to match video
+            print(f"[TTS] Audio is {audio.duration - video.duration:.2f}s longer than video. Trimming audio...")
             final_audio = audio.subclip(0, video.duration)
         elif video.duration > audio.duration + 1:
             # Video is significantly longer - this is OK, video will be silent at end
             print(f"[TTS] Video is {video.duration - audio.duration:.2f}s longer than audio")
-
+            
         # Set audio to video
         video_with_audio = final_video.set_audio(final_audio)
-
+        
         # Write output with good quality settings
+        print(f"[TTS] Writing combined video to {output_path}...")
         video_with_audio.write_videofile(
             str(output_path),
             codec='libx264',
@@ -116,13 +153,13 @@ def combine_video_audio(video_path: Path, audio_path: Path, output_path: Path) -
             audio_bitrate='192k',  # Good quality audio
             logger=None  # Suppress moviepy logging
         )
-
+        
         # Clean up
         video.close()
         audio.close()
         final_audio.close()
         video_with_audio.close()
-
+            
         print(f"[TTS] Combined video saved to {output_path}")
         return True
 
