@@ -93,11 +93,35 @@ This aligns with the hackathon’s focus on **safe, human-centered AI** and resp
 ## 🏗️ Tech Stack
 
 - **Frontend:** Next.js (React + TypeScript), Tailwind CSS
-- **Backend:** Next.js API routes / Node.js
-- **LLM:** Anthropic Claude API
+- **Backend:** Next.js API routes / Node.js + Flask (Manim visualization service)
+- **LLM:** Anthropic Claude API (or OpenAI)
+- **Visualization:** Manim Community Edition
 - **Storage (optional):** SQLite / Supabase / PostgreSQL (for saving sessions & history)
 
 > You can swap in your own stack; the core idea is agent-like prompt separation.
 
 ---
 
+## 🚀 Deployment
+
+Ready to deploy QED to the internet? We've got you covered!
+
+### Quick Deployment (5-10 minutes)
+
+Follow the **[Quick Start Guide](DEPLOY_QUICK_START.md)** to deploy to Railway in minutes.
+
+### Comprehensive Deployment Options
+
+See **[Internet Deployment Guide](DEPLOY_INTERNET.md)** for:
+
+- Railway (recommended)
+- Vercel + Railway
+- Render
+- Custom VPS deployment
+- Cost comparisons and monitoring
+
+### Local Docker Deployment
+
+See **[Deployment Guide](DEPLOYMENT.md)** for Docker Compose and local deployment.
+
+---

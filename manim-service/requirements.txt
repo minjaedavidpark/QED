@@ -8,3 +8,4 @@ dashscope>=1.24.6
 moviepy<2.0.0
 gTTS>=2.5.1
 python-dotenv>=1.0.0
+gunicorn>=21.2.0

@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Frontend - Next.js application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qed-frontend
+    ports:
+      - '3000:3000'
+    environment:
+      # LLM Provider Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Manim service URL (internal docker network)
+      - MANIM_SERVICE_URL=http://manim-service:5001
+    depends_on:
+      - manim-service
+    restart: unless-stopped
+    networks:
+      - qed-network
+
+  # Backend - Manim visualization service
+  manim-service:
+    build:
+      context: ./manim-service
+      dockerfile: Dockerfile
+    container_name: qed-manim-service
+    ports:
+      - '5001:5001'
+    volumes:
+      # Persist generated media files
+      - manim-media:/app/media
+      # Temporary files (can be ephemeral)
+      - manim-temp:/app/temp
+    environment:
+      # Copy LLM keys for AI-generated visualizations
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
+    restart: unless-stopped
+    networks:
+      - qed-network
+
+networks:
+  qed-network:
+    driver: bridge
+
+volumes:
+  manim-media:
+    driver: local
+  manim-temp:
+    driver: local

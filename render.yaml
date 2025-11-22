@@ -1,0 +1,40 @@
+services:
+  # Frontend - Next.js
+  - type: web
+    name: qed-frontend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LLM_PROVIDER
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: MANIM_SERVICE_URL
+        fromService:
+          type: web
+          name: qed-manim-service
+          property: host
+    healthCheckPath: /
+
+  # Backend - Manim Service
+  - type: web
+    name: qed-manim-service
+    runtime: docker
+    dockerfilePath: ./manim-service/Dockerfile
+    dockerContext: ./manim-service
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        sync: false
+    healthCheckPath: /health
+    disk:
+      name: manim-media
+      mountPath: /app/media
+      sizeGB: 10

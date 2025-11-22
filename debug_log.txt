@@ -1,0 +1,47 @@
+[2025-11-22T21:48:08.443Z] Handler started
+[2025-11-22T21:48:08.444Z] Received request for problem: Solve x and y:
+1. x + y = 3
+2. y = 2x
+[2025-11-22T21:48:08.444Z] Attempt 1/3
+[2025-11-22T21:48:08.444Z] Generating Manim code with AI...
+[2025-11-22T21:48:18.423Z] Generated code length: 2085
+[2025-11-22T21:48:18.427Z] Calling Manim service at: http://127.0.0.1:5001
+[2025-11-22T21:49:05.635Z] Manim response status: 200
+[2025-11-22T21:49:05.637Z] SUCCESS! Video ID: 70634f32-8646-40cb-8f08-99320d20c6e6
+[2025-11-22T21:50:10.686Z] Handler started
+[2025-11-22T21:50:10.686Z] Received request for problem: Solve x and y:
+1. x + y = 3
+2. y = 2x
+[2025-11-22T21:50:10.686Z] Attempt 1/3
+[2025-11-22T21:50:10.686Z] Generating Manim code with AI...
+[2025-11-22T21:50:21.408Z] Generated code length: 2291
+[2025-11-22T21:50:21.408Z] Calling Manim service at: http://127.0.0.1:5001
+[2025-11-22T21:50:56.214Z] Manim response status: 200
+[2025-11-22T21:50:56.220Z] SUCCESS! Video ID: acf0a6ed-d7b9-4e51-803e-3859fe8e2e49
+[2025-11-22T22:12:36.056Z] Handler started
+[2025-11-22T22:12:36.057Z] Received request for problem: 
+[2025-11-22T22:12:36.057Z] Image provided in request
+[2025-11-22T22:12:36.058Z] Attempt 1/3
+[2025-11-22T22:12:36.058Z] Generating Manim code with AI...
+[2025-11-22T22:12:50.048Z] Generated code length: 2100
+[2025-11-22T22:12:50.049Z] Calling Manim service at: http://127.0.0.1:5001
+[2025-11-22T22:13:18.792Z] Manim response status: 200
+[2025-11-22T22:13:18.797Z] SUCCESS! Video ID: 90dba2c2-8e13-4de0-91fb-de025cd17f08
+[2025-11-22T22:22:05.833Z] Handler started
+[2025-11-22T22:22:05.833Z] Received request for problem: 
+[2025-11-22T22:22:05.833Z] Image provided in request
+[2025-11-22T22:22:05.833Z] Attempt 1/3
+[2025-11-22T22:22:05.834Z] Generating Manim code with AI...
+[2025-11-22T22:22:16.101Z] Generated code length: 1911
+[2025-11-22T22:22:16.102Z] Calling Manim service at: http://127.0.0.1:5001
+[2025-11-22T22:22:46.004Z] Manim response status: 200
+[2025-11-22T22:22:46.016Z] SUCCESS! Video ID: 75c08789-eaf1-44fc-b6b8-4a6a7fa5ba86
+[2025-11-22T22:27:04.520Z] Handler started
+[2025-11-22T22:27:04.521Z] Received request for problem: 
+[2025-11-22T22:27:04.521Z] Image provided in request
+[2025-11-22T22:27:04.521Z] Attempt 1/3
+[2025-11-22T22:27:04.521Z] Generating Manim code with AI...
+[2025-11-22T22:27:19.802Z] Generated code length: 3043
+[2025-11-22T22:27:19.803Z] Calling Manim service at: http://127.0.0.1:5001
+[2025-11-22T22:27:21.770Z] Manim response status: 200
+[2025-11-22T22:27:53.400Z] SUCCESS! Video ID: c3f7b129-6574-407a-afeb-6c7da85308e6
