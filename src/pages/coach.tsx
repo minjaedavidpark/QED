@@ -11,10 +11,53 @@ export default function CoachPage() {
   const [currentProblem, setCurrentProblem] = useState('');
   const [currentImage, setCurrentImage] = useState<string | null>(null);
 
+  const [progressMessage, setProgressMessage] = useState<string | null>(null);
+  const [progressPercentage, setProgressPercentage] = useState<number>(0);
+
+  const readStream = async (response: Response, onComplete: (data: any) => void) => {
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+
+    if (!reader) {
+      throw new Error('Failed to initialize stream reader');
+    }
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.type === 'progress') {
+              setProgressMessage(data.message);
+              if (data.totalSteps) {
+                setProgressPercentage(Math.round((data.step / data.totalSteps) * 100));
+              }
+            } else if (data.type === 'complete') {
+              onComplete(data);
+            } else if (data.type === 'error') {
+              throw new Error(data.error || 'An error occurred');
+            }
+          } catch (e) {
+            console.error('Error parsing SSE data:', e);
+          }
+        }
+      }
+    }
+  };
+
   const handleStartCoaching = async (problem: string, image?: string) => {
     setCurrentProblem(problem);
     setCurrentImage(image || null);
     setLoading(true);
+    setProgressMessage('Starting session...');
+    setProgressPercentage(0);
 
     try {
       const response = await fetch('/api/coach', {
@@ -23,25 +66,28 @@ export default function CoachPage() {
         body: JSON.stringify({ problem, image }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to start coaching');
       }
 
-      setMessages([
-        {
-          role: 'assistant',
-          content: data.message,
-          timestamp: new Date(),
-        },
-      ]);
-      setStarted(true);
+      await readStream(response, (data) => {
+        setMessages([
+          {
+            role: 'assistant',
+            content: data.message,
+            timestamp: new Date(),
+          },
+        ]);
+        setStarted(true);
+      });
     } catch (error) {
       console.error('Error starting coaching:', error);
       alert(error instanceof Error ? error.message : 'Failed to start coaching session');
     } finally {
       setLoading(false);
+      setProgressMessage(null);
+      setProgressPercentage(0);
     }
   };
 
@@ -54,6 +100,8 @@ export default function CoachPage() {
 
     setMessages((prev) => [...prev, newUserMessage]);
     setLoading(true);
+    setProgressMessage('Thinking...');
+    setProgressPercentage(0);
 
     try {
       const response = await fetch('/api/coach', {
@@ -67,25 +115,28 @@ export default function CoachPage() {
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to get response');
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: data.message,
-          timestamp: new Date(),
-        },
-      ]);
+      await readStream(response, (data) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: data.message,
+            timestamp: new Date(),
+          },
+        ]);
+      });
     } catch (error) {
       console.error('Error sending message:', error);
       alert(error instanceof Error ? error.message : 'Failed to send message');
     } finally {
       setLoading(false);
+      setProgressMessage(null);
+      setProgressPercentage(0);
     }
   };
 
@@ -97,6 +148,8 @@ export default function CoachPage() {
     if (!confirmRequest) return;
 
     setLoading(true);
+    setProgressMessage('Generating solution...');
+    setProgressPercentage(0);
 
     try {
       const response = await fetch('/api/coach', {
@@ -108,25 +161,28 @@ export default function CoachPage() {
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to get solution');
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: data.message,
-          timestamp: new Date(),
-        },
-      ]);
+      await readStream(response, (data) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: data.message,
+            timestamp: new Date(),
+          },
+        ]);
+      });
     } catch (error) {
       console.error('Error requesting solution:', error);
       alert(error instanceof Error ? error.message : 'Failed to get solution');
     } finally {
       setLoading(false);
+      setProgressMessage(null);
+      setProgressPercentage(0);
     }
   };
 
@@ -180,6 +236,14 @@ export default function CoachPage() {
               buttonText="Start Coaching Session"
               loading={loading}
             />
+            {loading && progressMessage && (
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex items-center justify-center gap-3 animate-pulse">
+                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-blue-700 dark:text-blue-300 font-medium">
+                  {progressMessage} {progressPercentage > 0 && `(${progressPercentage}%)`}
+                </span>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -224,6 +288,14 @@ export default function CoachPage() {
               showSolutionButton={messages.length >= 4}
               onRequestSolution={handleRequestSolution}
             />
+            {loading && progressMessage && started && (
+              <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 px-6 py-3 rounded-full shadow-xl border border-blue-100 dark:border-gray-700 flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  {progressMessage}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

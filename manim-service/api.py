@@ -1,7 +1,7 @@
 """
 Simple Flask API for generating Manim visualizations
 """
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 import json
 import os
@@ -44,12 +44,7 @@ def health_check():
 def generate_dynamic_visualization():
     """
     Generate visualization using AI-generated Manim code with optional TTS
-
-    Request body:
-    {
-        "code": "Python code with GeneratedScene class",
-        "narration": "Optional text for voice narration (TTS)"
-    }
+    Streams progress updates via SSE
     """
     try:
         data = request.json
@@ -68,90 +63,115 @@ def generate_dynamic_visualization():
         with open(code_file, 'w') as f:
             f.write(code)
 
-        # Execute the generated code
-        result = subprocess.run(
-            [
-                './venv/bin/python',
-                'dynamic_scene_generator.py',
-                str(code_file),
-                output_file
-            ],
-            capture_output=True,
-            text=True,
-            cwd=os.path.dirname(os.path.abspath(__file__)),
-            timeout=60  # 60 second timeout
-        )
+        def generate():
+            try:
+                # Execute the generated code
+                process = subprocess.Popen(
+                    [
+                        './venv/bin/python',
+                        'dynamic_scene_generator.py',
+                        str(code_file),
+                        output_file
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    cwd=os.path.dirname(os.path.abspath(__file__)),
+                    bufsize=1,
+                    universal_newlines=True
+                )
 
-        # Clean up code file
-        code_file.unlink()
+                # Stream progress from stderr (where Manim writes progress)
+                # Manim output format: " 50%|#####     | 15/30 [00:02<00:02,  6.53it/s]"
+                while True:
+                    # Check if process is still running
+                    if process.poll() is not None:
+                        break
 
-        if result.returncode != 0:
-            return jsonify({
-                "error": "Failed to generate visualization",
-                "details": result.stderr
-            }), 500
+                    # Read line from stderr
+                    line = process.stderr.readline()
+                    if line:
+                        # Parse progress
+                        if "%" in line:
+                            try:
+                                # Extract percentage
+                                parts = line.split("%")
+                                percentage = int(parts[0].strip().split()[-1])
+                                yield f"data: {json.dumps({'type': 'progress', 'message': f'Rendering: {percentage}%', 'step': 1, 'totalSteps': 2, 'percentage': percentage})}\n\n"
+                            except:
+                                pass
+                        elif "Error" in line or "Exception" in line:
+                             yield f"data: {json.dumps({'type': 'log', 'message': line.strip()})}\n\n"
 
-        # Find the generated video file
-        video_path = None
-        possible_paths = [
-            MEDIA_DIR / "videos" / "720p30" / f"{output_file}.mp4",
-            MEDIA_DIR / "videos" / "1080p60" / f"{output_file}.mp4",
-        ]
+                # Get remaining output
+                stdout, stderr = process.communicate()
+                
+                if process.returncode != 0:
+                    yield f"data: {json.dumps({'type': 'error', 'error': 'Failed to generate visualization', 'details': stderr})}\n\n"
+                    return
 
-        for path in possible_paths:
-            if path.exists():
-                video_path = path
-                break
+                # Clean up code file
+                if code_file.exists():
+                    code_file.unlink()
 
-        if not video_path:
-            media_contents = list(MEDIA_DIR.rglob("*.mp4"))
-            return jsonify({
-                "error": "Video file not found",
-                "found_files": [str(p) for p in media_contents[:5]]
-            }), 500
+                # Find the generated video file
+                video_path = None
+                possible_paths = [
+                    MEDIA_DIR / "videos" / "720p30" / f"{output_file}.mp4",
+                    MEDIA_DIR / "videos" / "1080p60" / f"{output_file}.mp4",
+                ]
 
-        # Generate TTS and combine with video if narration is provided
-        final_video_path = video_path
-        if narration:
-            print(f"[API] Generating TTS for narration...")
-            audio_path = MEDIA_DIR / f"{viz_id}_audio.wav"
+                for path in possible_paths:
+                    if path.exists():
+                        video_path = path
+                        break
 
-            # Generate TTS
-            if generate_tts(narration, audio_path):
-                # Combine video with audio
-                combined_path = MEDIA_DIR / f"{viz_id}_with_audio.mp4"
-                if combine_video_audio(video_path, audio_path, combined_path):
-                    final_video_path = combined_path
-                    print(f"[API] Successfully added voice narration to video")
-                else:
-                    print(f"[API] Failed to combine video and audio, using silent video")
+                if not video_path:
+                    media_contents = list(MEDIA_DIR.rglob("*.mp4"))
+                    yield f"data: {json.dumps({'type': 'error', 'error': 'Video file not found', 'found_files': [str(p) for p in media_contents[:5]]})}\n\n"
+                    return
 
-                # Clean up temporary audio file
-                if audio_path.exists():
-                    audio_path.unlink()
-            else:
-                print(f"[API] Failed to generate TTS, using silent video")
+                # Generate TTS and combine with video if narration is provided
+                final_video_path = video_path
+                has_audio = False
+                
+                if narration:
+                    yield f"data: {json.dumps({'type': 'progress', 'message': 'Generating audio...', 'step': 2, 'totalSteps': 2})}\n\n"
+                    print(f"[API] Generating TTS for narration...")
+                    audio_path = MEDIA_DIR / f"{viz_id}_audio.wav"
 
-        # Copy final video to public directory
-        public_file = MEDIA_DIR / f"{viz_id}.mp4"
-        shutil.copy(final_video_path, public_file)
+                    # Generate TTS
+                    if generate_tts(narration, audio_path):
+                        # Combine video with audio
+                        combined_path = MEDIA_DIR / f"{viz_id}_with_audio.mp4"
+                        if combine_video_audio(video_path, audio_path, combined_path):
+                            final_video_path = combined_path
+                            has_audio = True
+                            print(f"[API] Successfully added voice narration to video")
+                        else:
+                            print(f"[API] Failed to combine video and audio, using silent video")
 
-        # Clean up temporary combined video if it was created
-        if final_video_path != video_path and final_video_path.exists():
-            final_video_path.unlink()
+                        # Clean up temporary audio file
+                        if audio_path.exists():
+                            audio_path.unlink()
+                    else:
+                        print(f"[API] Failed to generate TTS, using silent video")
 
-        return jsonify({
-            "success": True,
-            "video_id": viz_id,
-            "video_url": f"/video/{viz_id}",
-            "file_path": str(public_file),
-            "has_audio": narration != '' and final_video_path != video_path
-        })
+                # Copy final video to public directory
+                public_file = MEDIA_DIR / f"{viz_id}.mp4"
+                shutil.copy(final_video_path, public_file)
 
-    except subprocess.TimeoutExpired:
-        return jsonify({
-            "error": "Visualization generation timed out (>60s)"
-        }), 500
+                # Clean up temporary combined video if it was created
+                if final_video_path != video_path and final_video_path.exists():
+                    final_video_path.unlink()
+
+                yield f"data: {json.dumps({'type': 'complete', 'success': True, 'video_id': viz_id, 'video_url': f'/video/{viz_id}', 'file_path': str(public_file), 'has_audio': has_audio})}\n\n"
+
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'error': 'Internal server error', 'details': str(e)})}\n\n"
+
+        return Response(generate(), mimetype='text/event-stream')
+
     except Exception as e:
         return jsonify({
             "error": "Internal server error",

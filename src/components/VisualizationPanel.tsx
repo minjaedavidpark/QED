@@ -14,6 +14,46 @@ export default function VisualizationPanel({
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progressMessage, setProgressMessage] = useState<string | null>(null);
+  const [progressPercentage, setProgressPercentage] = useState<number>(0);
+
+  const readStream = async (response: Response, onComplete: (data: any) => void) => {
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+
+    if (!reader) {
+      throw new Error('Failed to initialize stream reader');
+    }
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.type === 'progress') {
+              setProgressMessage(data.message);
+              if (data.totalSteps) {
+                setProgressPercentage(Math.round((data.step / data.totalSteps) * 100));
+              }
+            } else if (data.type === 'complete') {
+              onComplete(data);
+            } else if (data.type === 'error') {
+              throw new Error(data.error || 'An error occurred');
+            }
+          } catch (e) {
+            console.error('Error parsing SSE data:', e);
+          }
+        }
+      }
+    }
+  };
 
   const generateVisualization = async () => {
     if ((!problem || problem.trim().length === 0) && !image) {
@@ -29,6 +69,8 @@ export default function VisualizationPanel({
     setLoading(true);
     setError(null);
     setVideoUrl(null);
+    setProgressMessage('Initializing...');
+    setProgressPercentage(0);
 
     if (onVisualize) {
       onVisualize();
@@ -46,31 +88,27 @@ export default function VisualizationPanel({
 
       console.log('[VisualizationPanel] Response status:', response.status);
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('[VisualizationPanel] Failed to parse response JSON:', parseError);
-        if (!response.ok) {
+      if (!response.ok) {
+        // Try to parse error from JSON if possible, though it might be streamed
+        try {
+          const data = await response.json();
+          throw new Error(data.details || data.error || 'Failed to generate visualization');
+        } catch (e) {
           throw new Error(`Server error (${response.status}): ${response.statusText}`);
         }
-        throw new Error('Invalid response from server');
       }
 
-      console.log('[VisualizationPanel] Response data:', data);
-
-      if (!response.ok) {
-        console.error('[VisualizationPanel] Error response:', data);
-        throw new Error(data.details || data.error || 'Failed to generate visualization');
-      }
-
-      console.log('[VisualizationPanel] Success! Video URL:', data.videoUrl);
-      setVideoUrl(data.videoUrl);
+      await readStream(response, (data) => {
+        console.log('[VisualizationPanel] Success! Video URL:', data.videoUrl);
+        setVideoUrl(data.videoUrl);
+      });
     } catch (err) {
       console.error('[VisualizationPanel] Exception:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+      setProgressMessage(null);
+      setProgressPercentage(0);
     }
   };
 
@@ -95,6 +133,21 @@ export default function VisualizationPanel({
           )}
         </button>
       </div>
+
+      {loading && progressMessage && (
+        <div className="mb-4">
+          <div className="flex justify-between text-sm text-purple-700 dark:text-purple-300 mb-1 font-medium">
+            <span>{progressMessage}</span>
+            {progressPercentage > 0 && <span>{progressPercentage}%</span>}
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-purple-600 to-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${Math.max(5, progressPercentage)}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">

@@ -15,18 +15,29 @@ interface CoachResponse {
   error?: string;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<CoachResponse>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res
       .status(405)
       .json({ message: 'Method not allowed', error: 'Only POST requests are allowed' });
   }
 
+  // Enable streaming
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const sendEvent = (type: string, data: any) => {
+    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+  };
+
   try {
     const { problem, image, messages, requestSolution }: CoachRequest = req.body;
 
     // Initial problem submission - decompose first
     if ((problem || image) && !messages) {
+      sendEvent('progress', { message: 'Analyzing problem...', step: 1, totalSteps: 3 });
+
       const decomposerPrompt = getAgentPrompt('decomposer');
 
       // Construct user message content
@@ -56,6 +67,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         }
       }
 
+      sendEvent('progress', {
+        message: 'Decomposing problem structure...',
+        step: 2,
+        totalSteps: 3,
+      });
       const decompositionResponse = await callLLM(decomposerPrompt, [
         { role: 'user', content: userContent as any },
       ]);
@@ -70,6 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       }
 
       // Now start the Socratic coaching
+      sendEvent('progress', { message: 'Preparing coaching session...', step: 3, totalSteps: 3 });
       const coachPrompt = getAgentPrompt('coach');
       const coachingContext = `Problem: ${problem || 'See image'}\n\nProblem Breakdown:\n${decompositionResponse}\n\nStart coaching the student through this problem step by step. Begin with the first step.`;
 
@@ -94,10 +111,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         { role: 'user', content: coachUserContent as any },
       ]);
 
-      return res.status(200).json({
+      sendEvent('complete', {
         message: coachResponse,
         decomposition,
       });
+      res.end();
+      return;
     }
 
     // Ongoing conversation
@@ -106,6 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
       // If student requests full solution
       if (requestSolution) {
+        sendEvent('progress', { message: 'Generating full solution...', step: 1, totalSteps: 1 });
         const solutionRequest = [
           ...messages,
           {
@@ -116,23 +136,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         ];
 
         const solutionResponse = await callLLM(coachPrompt, solutionRequest);
-        return res.status(200).json({ message: solutionResponse });
+        sendEvent('complete', { message: solutionResponse });
+        res.end();
+        return;
       }
 
       // Continue Socratic coaching
+      sendEvent('progress', { message: 'Thinking...', step: 1, totalSteps: 1 });
       const response = await callLLM(coachPrompt, messages);
-      return res.status(200).json({ message: response });
+      sendEvent('complete', { message: response });
+      res.end();
+      return;
     }
 
-    return res.status(400).json({
+    res.status(400).json({
       message: 'Invalid request',
       error: 'Either problem, image, or messages must be provided',
     });
   } catch (error) {
     console.error('Error in coach API:', error);
-    return res.status(500).json({
-      message: 'An error occurred',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    // If headers haven't been sent (unlikely given we set them early), send JSON error
+    // Otherwise send error event
+    if (!res.headersSent) {
+      res.status(500).json({
+        message: 'An error occurred',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } else {
+      sendEvent('error', {
+        message: 'An error occurred',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      res.end();
+    }
   }
 }

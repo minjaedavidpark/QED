@@ -32,14 +32,20 @@ function log(message: string) {
 
 import { generateManimCode } from './generate-manim-code';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<VisualizeResponse>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   log('Handler started');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Enable streaming
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const sendEvent = (type: string, data: any) => {
+    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+  };
 
   try {
     const { problem, image }: VisualizeRequest = req.body;
@@ -49,7 +55,12 @@ export default async function handler(
 
     if (!problem && !image) {
       log('ERROR: No problem or image provided');
-      return res.status(400).json({ error: 'Problem or image is required' });
+      // If headers not sent, send JSON error (though we set headers above, so likely need event)
+      // But for bad request at start, we might want to just return 400 if we hadn't set headers yet.
+      // However, we set headers immediately. So send error event.
+      sendEvent('error', { error: 'Problem or image is required' });
+      res.end();
+      return;
     }
 
     let currentCode = '';
@@ -60,6 +71,14 @@ export default async function handler(
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         log(`Attempt ${attempt}/${MAX_RETRIES}`);
+        sendEvent('progress', {
+          message:
+            attempt > 1
+              ? `Retrying generation (Attempt ${attempt})...`
+              : 'Generating Manim code...',
+          step: 1,
+          totalSteps: 2,
+        });
 
         // Generate Manim code using AI (with error context if retrying)
         log('Generating Manim code with AI...');
@@ -77,64 +96,125 @@ export default async function handler(
         currentExplanation = explanation;
 
         log(`Generated code length: ${code.length}`);
-        // Removed logging explanation to file to avoid large file writes
-        // log(`Explanation: ${explanation}`);
 
         // Call Manim service with generated code and narration
         log(`Calling Manim service at: ${MANIM_SERVICE_URL}`);
-        const manimResponse = await fetch(`${MANIM_SERVICE_URL}/generate-dynamic`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code,
-            narration: explanation, // Send explanation as TTS narration
-          }),
-        });
 
-        log(`Manim response status: ${manimResponse.status}`);
+        try {
+          const manimResponse = await fetch(`${MANIM_SERVICE_URL}/generate-dynamic`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code,
+              narration: explanation, // Send explanation as TTS narration
+            }),
+          });
 
-        if (!manimResponse.ok) {
-          const errorData = await manimResponse.json();
-          log(`ERROR from Manim service: ${JSON.stringify(errorData)}`);
+          log(`Manim response status: ${manimResponse.status}`);
 
-          // Only retry if it's a code execution error (usually 500 from Manim service with details)
-          // If it's a 400 (bad request) or other error, it might not be fixable by LLM
-          if (manimResponse.status === 500 && errorData.details) {
-            // Capture error for retry
-            lastError = errorData.details || errorData.error || 'Unknown Manim error';
-
-            // If it's the last attempt, throw to exit loop
-            if (attempt === MAX_RETRIES) {
-              throw new Error(`Manim service failed: ${lastError}`);
-            }
-
-            // Continue to next iteration (retry)
-            continue;
-          } else {
-            // Non-retriable error (e.g. service down, bad request structure)
+          if (!manimResponse.ok) {
+            const errorData = await manimResponse.json();
+            log(`ERROR from Manim service: ${JSON.stringify(errorData)}`);
             throw new Error(errorData.error || `Manim service error ${manimResponse.status}`);
           }
+
+          if (!manimResponse.body) {
+            throw new Error('No response body from Manim service');
+          }
+
+          // Read the stream from Manim service
+          const reader = manimResponse.body.getReader();
+          const decoder = new TextDecoder();
+          let completed = false;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+
+                  if (data.type === 'progress') {
+                    // Forward progress to client
+                    sendEvent('progress', {
+                      message: data.message,
+                      step: 2,
+                      totalSteps: 2,
+                      percentage: data.percentage,
+                    });
+                  } else if (data.type === 'complete') {
+                    completed = true;
+                    log(`SUCCESS! Video ID: ${data.video_id}`);
+
+                    sendEvent('complete', {
+                      videoUrl: `${MANIM_SERVICE_URL}${data.video_url}`,
+                      videoId: data.video_id,
+                      explanation,
+                      details: data.has_audio
+                        ? undefined
+                        : 'Audio generation failed (API key missing or invalid), but video was created successfully.',
+                    });
+                    res.end();
+                    return;
+                  } else if (data.type === 'error') {
+                    throw new Error(data.error || 'Manim generation failed');
+                  } else if (data.type === 'log') {
+                    log(`[Manim Log] ${data.message}`);
+                  }
+                } catch (e) {
+                  // Ignore parsing errors for partial chunks
+                }
+              }
+            }
+          }
+
+          if (!completed) {
+            throw new Error('Stream ended without completion event');
+          }
+        } catch (error: any) {
+          // Check if it's a Manim execution error that we should retry
+          // The error might come from the stream as an exception or 'error' event
+          // If we caught an error from the stream loop, check if it's retriable
+
+          // For now, let's assume stream errors are retriable if they are about generation failure
+          // But we need to distinguish between code errors (retriable) and system errors
+
+          // If we threw "Manim generation failed", it might be code error.
+          // Let's capture it.
+
+          log(`Manim service stream error: ${error.message}`);
+
+          if (
+            error.message.includes('Manim generation failed') ||
+            error.message.includes('Failed to generate')
+          ) {
+            lastError = error.message;
+            if (attempt === MAX_RETRIES) {
+              throw error;
+            }
+            continue;
+          }
+
+          throw error;
         }
-
-        const result = await manimResponse.json();
-        log(`SUCCESS! Video ID: ${result.video_id}`);
-
-        return res.status(200).json({
-          videoUrl: `${MANIM_SERVICE_URL}${result.video_url}`,
-          videoId: result.video_id,
-          explanation,
-          details: result.has_audio
-            ? undefined
-            : 'Audio generation failed (API key missing or invalid), but video was created successfully.',
-        });
       } catch (error) {
         log(`Exception in attempt ${attempt}: ${error}`);
 
         // Don't retry on network errors (fetch failed) or other system errors
         // Only retry if we explicitly 'continue'd from a Manim code error
-        throw error;
+        if (
+          attempt === MAX_RETRIES ||
+          !(error instanceof Error && error.message.includes('Manim service failed'))
+        ) {
+          throw error;
+        }
       }
     }
 
@@ -142,9 +222,10 @@ export default async function handler(
     throw new Error(`Failed after ${MAX_RETRIES} attempts. Last error: ${lastError}`);
   } catch (error) {
     log(`EXCEPTION: ${error}`);
-    return res.status(500).json({
+    sendEvent('error', {
       error: error instanceof Error ? error.message : 'Unknown error',
       details: 'The system attempted to self-correct but failed. Please try a simpler prompt.',
     });
+    res.end();
   }
 }
