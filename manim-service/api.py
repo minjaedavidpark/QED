@@ -89,31 +89,53 @@ def generate_dynamic_visualization():
 
         def generate():
             try:
+                # Get absolute paths
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                generator_script = os.path.join(script_dir, 'dynamic_scene_generator.py')
+
+                # Verify script exists
+                if not os.path.exists(generator_script):
+                    yield f"data: {json.dumps({'type': 'error', 'error': f'Script not found: {generator_script}'})}\n\n"
+                    return
+
                 # Execute the generated code
+                print(f"[DEBUG] Starting subprocess: {PYTHON_PATH} {generator_script}")
+                print(f"[DEBUG] Code file: {code_file}")
+                print(f"[DEBUG] Output file: {output_file}")
+
                 process = subprocess.Popen(
                     [
                         PYTHON_PATH,
-                        'dynamic_scene_generator.py',
+                        generator_script,
                         str(code_file),
                         output_file
                     ],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    cwd=os.path.dirname(os.path.abspath(__file__)),
+                    cwd=script_dir,
                     bufsize=1,
                     universal_newlines=True
                 )
+
+                print(f"[DEBUG] Subprocess started with PID: {process.pid}")
 
                 # Stream progress from stderr (where Manim writes progress)
                 # Manim output format: " 50%|#####     | 15/30 [00:02<00:02,  6.53it/s]"
                 while True:
                     # Check if process is still running
-                    if process.poll() is not None:
+                    returncode = process.poll()
+                    if returncode is not None:
+                        print(f"[DEBUG] Process exited with code: {returncode}")
                         break
 
-                    # Read line from stderr
-                    line = process.stderr.readline()
+                    # Read line from stderr (non-blocking check)
+                    try:
+                        line = process.stderr.readline()
+                    except Exception as e:
+                        print(f"[DEBUG] Error reading from subprocess: {e}")
+                        break
+
                     if line:
                         # Parse progress
                         if "%" in line:
@@ -129,9 +151,16 @@ def generate_dynamic_visualization():
 
                 # Get remaining output
                 stdout, stderr = process.communicate()
-                
+
+                print(f"[DEBUG] Process completed with return code: {process.returncode}")
+                print(f"[DEBUG] STDOUT: {stdout[:500] if stdout else 'None'}")
+                print(f"[DEBUG] STDERR: {stderr[:500] if stderr else 'None'}")
+
                 if process.returncode != 0:
-                    yield f"data: {json.dumps({'type': 'error', 'error': 'Failed to generate visualization', 'details': stderr})}\n\n"
+                    error_msg = f"Subprocess failed with code {process.returncode}"
+                    details = stderr if stderr else stdout
+                    print(f"[ERROR] {error_msg}: {details}")
+                    yield f"data: {json.dumps({'type': 'error', 'error': error_msg, 'details': details})}\n\n"
                     return
 
                 # Clean up code file
