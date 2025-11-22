@@ -8,15 +8,34 @@ import os
 import subprocess
 import uuid
 import shutil
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from tts_generator import generate_tts, combine_video_audio
+
+# Try to import TTS generator, but don't fail if it's not available
+try:
+    from tts_generator import generate_tts, combine_video_audio
+    TTS_AVAILABLE = True
+except ImportError as e:
+    print(f"[WARNING] TTS generator not available: {e}")
+    TTS_AVAILABLE = False
+    generate_tts = None
+    combine_video_audio = None
 
 # Load environment variables from parent directory's .env.local
 parent_env = Path(__file__).parent.parent / '.env.local'
 if parent_env.exists():
     load_dotenv(parent_env)
     print(f"[ENV] Loaded environment from {parent_env}")
+else:
+    print(f"[ENV] No .env.local file found at {parent_env}, using environment variables")
+
+# Determine Python executable path
+# In Docker/production: use 'python' or sys.executable
+# In development: use venv python if available
+venv_python = Path('./venv/bin/python')
+PYTHON_PATH = str(venv_python) if venv_python.exists() else sys.executable
+print(f"[STARTUP] Using Python: {PYTHON_PATH}")
 
 # Ensure LaTeX is in PATH
 latex_path = "/Library/TeX/texbin"
@@ -32,6 +51,11 @@ MEDIA_DIR.mkdir(exist_ok=True)
 
 TEMP_DIR = Path("./temp")
 TEMP_DIR.mkdir(exist_ok=True)
+
+print(f"[STARTUP] Flask app initialized")
+print(f"[STARTUP] Media directory: {MEDIA_DIR.absolute()}")
+print(f"[STARTUP] Temp directory: {TEMP_DIR.absolute()}")
+print(f"[STARTUP] TTS available: {TTS_AVAILABLE}")
 
 
 @app.route('/health', methods=['GET'])
@@ -68,7 +92,7 @@ def generate_dynamic_visualization():
                 # Execute the generated code
                 process = subprocess.Popen(
                     [
-                        './venv/bin/python',
+                        PYTHON_PATH,
                         'dynamic_scene_generator.py',
                         str(code_file),
                         output_file
@@ -211,7 +235,7 @@ def generate_visualization():
         # Run manim scene generator
         result = subprocess.run(
             [
-                './venv/bin/python',
+                PYTHON_PATH,
                 'scene_generator.py',
                 problem_json
             ],
