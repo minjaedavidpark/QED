@@ -99,6 +99,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Call Manim service with generated code and narration
         log(`Calling Manim service at: ${MANIM_SERVICE_URL}`);
+        log(`Full URL: ${MANIM_SERVICE_URL}/generate-dynamic`);
+        log(`ENV MANIM_SERVICE_URL: ${process.env.MANIM_SERVICE_URL}`);
 
         try {
           const manimResponse = await fetch(`${MANIM_SERVICE_URL}/generate-dynamic`, {
@@ -110,6 +112,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               code,
               narration: explanation, // Send explanation as TTS narration
             }),
+            // Add timeout to prevent hanging
+            signal: AbortSignal.timeout(300000), // 5 minute timeout for rendering
           });
 
           log(`Manim response status: ${manimResponse.status}`);
@@ -190,6 +194,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // Let's capture it.
 
           log(`Manim service stream error: ${error.message}`);
+          log(`Error type: ${error.constructor.name}`);
+          log(`Error cause: ${error.cause}`);
+          log(`Full error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
+
+          // Check for network/fetch errors
+          if (
+            error.message.includes('fetch failed') ||
+            error.name === 'FetchError' ||
+            error.code === 'ECONNREFUSED' ||
+            error.code === 'ETIMEDOUT'
+          ) {
+            const networkError = new Error(
+              `Cannot connect to Manim service at ${MANIM_SERVICE_URL}. Please check if the service is running and the URL is correct.`
+            );
+            log(`NETWORK ERROR: ${networkError.message}`);
+            throw networkError;
+          }
 
           if (
             error.message.includes('Manim generation failed') ||
