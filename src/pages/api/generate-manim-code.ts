@@ -286,9 +286,20 @@ NARRATION REQUIREMENTS:
 5. Time it to match your animation (3-6 sentences for 20-40 seconds)
 6. Speak directly about the math/concept, never about "the visualization" itself
 
-Respond with:
-1. The complete Python code (inside markdown code blocks)
-2. The VOICE-OVER NARRATION SCRIPT (as described above - this will be spoken aloud)
+OUTPUT FORMAT:
+1. First, provide the complete Python code inside markdown code blocks
+2. After the code block, write the narration text DIRECTLY - no headers, no labels, just the teaching script
+   - DO NOT write "Voice-over narration script:" or any similar header
+   - DO NOT write "Narration:" or "Explanation:"
+   - Just write the natural teaching dialogue that will be read aloud
+
+Example - your response should look like this:
+
+[Python code in markdown code block]
+
+[Narration text here - e.g., "Let's solve the equation 2x plus 3 equals 7. First, we subtract 3 from both sides..."]
+
+CRITICAL: Write the narration text directly without any label or header!
 
 Be creative and make it educational!`;
 
