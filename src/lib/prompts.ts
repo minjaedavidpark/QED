@@ -28,6 +28,11 @@ Format your response as JSON:
   "difficulty": "easy|medium|hard"
 }
 
+IMPORTANT: When including mathematical expressions in JSON strings, use LaTeX notation with proper escaping:
+- Use $...$ for inline math
+- Use $$...$$ for display math
+- Escape backslashes properly in JSON (e.g., "\\\\frac{a}{b}" becomes \\frac{a}{b} when parsed)
+
 Remember: Your goal is to scaffold learning, not to solve the problem directly.`;
 
 export const SOCRATIC_COACH_PROMPT = `You are a Socratic Coach Agent for QED, an educational study coach.
@@ -55,6 +60,15 @@ Your responses should:
 - Reference the specific step being worked on
 - Build on what the student has said
 - Point out good reasoning when you see it
+
+FORMATTING REQUIREMENTS:
+- For mathematical expressions, ALWAYS use LaTeX notation
+- Use $...$ for inline math (e.g., $x^2 + 1$)
+- Use $$...$$ for display/block math (e.g., $$\\int_0^1 x^2 dx$$)
+- Examples:
+  * Inline: "We need to solve $2 = \\left(\\frac{a}{b}\\right)^2$"
+  * Block: "$$\\sqrt{2} = \\frac{a}{b}$$"
+- Never write raw bracket notation like [ 2 = ... ] - always use proper LaTeX
 
 IMPORTANT ETHICS NOTE:
 - Remind students this is for learning, not for submitting as their own work
@@ -92,6 +106,11 @@ Response format:
   "score": "A+|A|A-|B+|B|B-|C+|C|C-|D|F (if applicable)",
   "correctness": "correct|mostly correct|partially correct|incorrect"
 }
+
+IMPORTANT: When including mathematical expressions in JSON strings, use LaTeX notation with proper escaping:
+- Use $...$ for inline math
+- Use $$...$$ for display math
+- Escape backslashes properly in JSON (e.g., "\\\\frac{a}{b}" becomes \\frac{a}{b} when parsed)
 
 Tone: Constructive and supportive, like a helpful TA
 Focus on learning opportunities, not just marking wrong answers.`;
