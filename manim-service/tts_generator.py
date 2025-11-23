@@ -124,18 +124,24 @@ def combine_video_audio(video_path: Path, audio_path: Path, output_path: Path) -
 
         print(f"[TTS] Video duration: {video.duration:.2f}s, Audio duration: {audio.duration:.2f}s")
 
-        # Strategy: Trim audio to match video duration if needed
+        # Strategy: Extend video to match audio duration if needed
         final_video = video
         final_audio = audio
-        
+
         if audio.duration > video.duration:
-            # Audio is longer - trim it to match video
-            print(f"[TTS] Audio is {audio.duration - video.duration:.2f}s longer than video. Trimming audio...")
-            final_audio = audio.subclip(0, video.duration)
+            # Audio is longer - extend video by freezing last frame
+            extra_time = audio.duration - video.duration
+            print(f"[TTS] Audio is {extra_time:.2f}s longer than video. Extending video with frozen last frame...")
+
+            # Freeze the last frame for the remaining duration
+            last_frame = video.to_ImageClip(t=video.duration - 0.1).set_duration(extra_time)
+
+            # Concatenate original video with frozen frame
+            final_video = concatenate_videoclips([video, last_frame])
         elif video.duration > audio.duration + 1:
             # Video is significantly longer - this is OK, video will be silent at end
             print(f"[TTS] Video is {video.duration - audio.duration:.2f}s longer than audio")
-            
+
         # Set audio to video
         video_with_audio = final_video.set_audio(final_audio)
         

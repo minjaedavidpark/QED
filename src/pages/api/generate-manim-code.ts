@@ -36,11 +36,12 @@ HACKATHON AESTHETICS (WINNING STYLE):
 CORE REQUIREMENTS:
 1. Create a class called "GeneratedScene" that inherits from Scene
 2. Implement the construct() method with the visualization logic
-3. Make animations 20-45 seconds to match narration length
-4. Use self.play() for animations and self.wait() for pauses (typically 1-2 seconds between steps)
+3. Make animations 30-50 seconds to match narration length (CRITICAL: animations should be LONGER than the narration!)
+4. Use self.play() for animations and self.wait() for pauses (typically 2-3 seconds between steps)
 5. Focus on clarity and educational value
 6. CRITICAL: Break down complex problems into CLEAR STEPS - don't rush!
 7. Each step should be visible long enough to read and understand
+8. ALWAYS end with self.wait(3) to ensure narration completes before video ends
 
 SCREEN SIZING (CRITICAL):
 - Default Manim resolution is 1920x1080 (16:9 aspect ratio)
@@ -241,13 +242,15 @@ CRITICAL REMINDERS:
 - Use colors strategically to highlight important elements
 - Position objects clearly - use .to_edge(), .next_to(), .move_to()
 
-PACING FOR NARRATION SYNC:
-- SLOW DOWN! Add self.wait(1.5) or self.wait(2) between major steps
+PACING FOR NARRATION SYNC (CRITICAL - NARRATION TIMING):
+- SLOW DOWN! Add self.wait(2) or self.wait(3) between major steps
 - Each step should be on screen long enough for narration to explain it
 - Don't rush through transformations - use run_time=2 or run_time=3 for important animations
-- Example: self.play(Write(equation), run_time=2) then self.wait(1.5)
-- For explanations with 3-5 sentences, plan for 20-30 seconds of animation
+- Example: self.play(Write(equation), run_time=2) then self.wait(2)
+- For explanations with 3-6 sentences, plan for 30-50 seconds of animation
 - Match visual changes to explanation flow - one animation per concept
+- ALWAYS add self.wait(3) at the END of construct() to ensure narration finishes
+- If narration is 6 sentences (~30-40 seconds), make video at least 40-50 seconds long
 
 VOICE-OVER NARRATION (CRITICAL - THIS WILL BE READ ALOUD):
 The explanation you provide will be converted to VOICE-OVER AUDIO that plays during the visualization.
