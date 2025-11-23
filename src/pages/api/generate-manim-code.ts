@@ -249,19 +249,43 @@ PACING FOR NARRATION SYNC:
 - For explanations with 3-5 sentences, plan for 20-30 seconds of animation
 - Match visual changes to explanation flow - one animation per concept
 
-EXPLANATION STYLE (CLEAR & EDUCATIONAL):
-- The explanation MUST be clear, concise, and educational.
-- Explain the steps shown in the visualization as if teaching a student.
-- Avoid complex jargon unless necessary.
-- Match the explanation to the visual steps.
-- Example:
-  "First, we start with the equation 2x + 3 = 7.
-   To solve for x, we subtract 3 from both sides, giving us 2x = 4.
-   Finally, we divide by 2 to find that x equals 2."
+VOICE-OVER NARRATION (CRITICAL - THIS WILL BE READ ALOUD):
+The explanation you provide will be converted to VOICE-OVER AUDIO that plays during the visualization.
+This is NOT a code comment or description - it's a NATURAL TEACHING SCRIPT.
+
+REQUIRED NARRATION STYLE:
+- Write as if you're a teacher explaining the concept OUT LOUD to a student
+- Use conversational, natural language (like you're talking, not writing)
+- Use "we" or "let's" - make it collaborative and engaging
+- Match the narration to the visual steps in your animation
+- Keep it concise but complete (3-6 sentences, ~20-40 seconds of speech)
+- NO meta-commentary like "This visualization shows..." or "The animation demonstrates..."
+- Just explain the MATH/CONCEPT directly as if teaching in person
+
+GOOD NARRATION EXAMPLES:
+✓ "Let's solve the equation 2x plus 3 equals 7. First, we subtract 3 from both sides to isolate the term with x. This gives us 2x equals 4. Now we divide both sides by 2, and we find that x equals 2."
+
+✓ "To find the area of a triangle, we use the formula: one half times base times height. Here, our base is 6 and the height is 4. Multiplying these together and dividing by 2, we get an area of 12 square units."
+
+✓ "The Pythagorean theorem states that in a right triangle, a squared plus b squared equals c squared. Let's verify this with our triangle. We have sides of length 3 and 4. Three squared is 9, four squared is 16, and 9 plus 16 equals 25. The square root of 25 is 5, which matches our hypotenuse!"
+
+BAD NARRATION EXAMPLES (AVOID THESE):
+✗ "This Manim visualization demonstrates the solution to an equation."
+✗ "Explanation of the visualization: we show how to solve for x."
+✗ "The following animation illustrates the concept of derivatives."
+✗ "This video explains quadratic equations using visual elements."
+
+NARRATION REQUIREMENTS:
+1. Start teaching IMMEDIATELY - no preamble or meta-text
+2. Use simple, clear language appropriate for students
+3. Explain WHAT is happening and WHY at each step
+4. Make it flow naturally when read aloud
+5. Time it to match your animation (3-6 sentences for 20-40 seconds)
+6. Speak directly about the math/concept, never about "the visualization" itself
 
 Respond with:
 1. The complete Python code (inside markdown code blocks)
-2. A brief explanation of what the visualization shows (THIS MUST BE THE EDUCATIONAL EXPLANATION)
+2. The VOICE-OVER NARRATION SCRIPT (as described above - this will be spoken aloud)
 
 Be creative and make it educational!`;
 
