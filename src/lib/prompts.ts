@@ -114,7 +114,7 @@ Create a structured study plan that:
 5. Builds in buffer time for unexpected delays
 6. Follows evidence-based learning principles
 
-Response format:
+IMPORTANT: You MUST respond with ONLY valid JSON in this exact format (no markdown, no explanations):
 {
   "summary": {
     "totalWeeks": number,

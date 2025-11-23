@@ -64,9 +64,16 @@ Please create a comprehensive study plan for this student.`;
     // Try to parse as JSON if it's structured
     let parsed;
     try {
-      parsed = JSON.parse(planResponse);
-    } catch {
+      // Extract JSON from markdown code fences if present
+      let jsonString = planResponse;
+      const codeBlockMatch = planResponse.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+      if (codeBlockMatch) {
+        jsonString = codeBlockMatch[1].trim();
+      }
+      parsed = JSON.parse(jsonString);
+    } catch (e) {
       // If not JSON, return as plain text
+      console.log('Failed to parse study plan as JSON:', e);
       parsed = null;
     }
 
