@@ -157,10 +157,16 @@ def generate_dynamic_visualization():
                 print(f"[DEBUG] STDERR: {stderr[:500] if stderr else 'None'}")
 
                 if process.returncode != 0:
-                    error_msg = f"Subprocess failed with code {process.returncode}"
-                    details = stderr if stderr else stdout
-                    print(f"[ERROR] {error_msg}: {details}")
-                    yield f"data: {json.dumps({'type': 'error', 'error': error_msg, 'details': details})}\n\n"
+                    # Exit code -9 means killed by OS (usually OOM)
+                    if process.returncode == -9:
+                        error_msg = "Rendering failed: Out of memory. Try a simpler problem or shorter explanation."
+                        print(f"[ERROR] OOM Kill detected (exit code -9)")
+                        yield f"data: {json.dumps({'type': 'error', 'error': error_msg, 'details': 'The visualization was too complex for available memory. Please try a simpler problem.'})}\n\n"
+                    else:
+                        error_msg = f"Subprocess failed with code {process.returncode}"
+                        details = stderr if stderr else stdout
+                        print(f"[ERROR] {error_msg}: {details}")
+                        yield f"data: {json.dumps({'type': 'error', 'error': error_msg, 'details': details})}\n\n"
                     return
 
                 # Clean up code file
@@ -170,6 +176,7 @@ def generate_dynamic_visualization():
                 # Find the generated video file
                 video_path = None
                 possible_paths = [
+                    MEDIA_DIR / "videos" / "480p24" / f"{output_file}.mp4",
                     MEDIA_DIR / "videos" / "720p30" / f"{output_file}.mp4",
                     MEDIA_DIR / "videos" / "1080p60" / f"{output_file}.mp4",
                 ]

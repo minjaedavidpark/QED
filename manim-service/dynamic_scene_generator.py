@@ -18,12 +18,19 @@ def execute_generated_code(code: str, output_file: str):
         output_file: Output filename for the rendered video
     """
     try:
-        # Set up Manim configuration
-        config.pixel_height = 720
-        config.pixel_width = 1280
-        config.frame_rate = 30
+        # Set up Manim configuration (optimized for low memory environments)
+        # Using 480p @ 24fps to reduce memory consumption in Railway
+        config.pixel_height = 480
+        config.pixel_width = 854
+        config.frame_rate = 24
         config.output_file = output_file
         config.media_dir = "./media"
+
+        # Memory optimization settings
+        config.write_to_movie = True
+        config.save_last_frame = False  # Don't save extra frames
+        config.preview = False  # Disable preview
+        config.write_all = False  # Only write the final video
 
         # Create a restricted global namespace for code execution
         # Start with standard builtins but remove dangerous functions

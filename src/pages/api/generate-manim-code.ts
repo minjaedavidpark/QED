@@ -43,6 +43,14 @@ CORE REQUIREMENTS:
 7. Each step should be visible long enough to read and understand
 8. ALWAYS end with self.wait(3) to ensure narration completes before video ends
 
+MEMORY CONSTRAINTS (CRITICAL FOR DEPLOYMENT):
+- Keep visualizations SIMPLE - avoid creating too many objects at once
+- For complex problems, focus on KEY STEPS only, not every detail
+- Limit the number of objects on screen (max ~20-30 objects total)
+- Reuse objects with transformations instead of creating new ones
+- Avoid very long text strings - break them into smaller pieces
+- Don't create massive arrays or grids - use representative samples instead
+
 SCREEN SIZING (CRITICAL):
 - Default Manim resolution is 1920x1080 (16:9 aspect ratio)
 - Visible area: x from -7 to 7, y from -4 to 4
