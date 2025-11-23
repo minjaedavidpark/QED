@@ -1,0 +1,28 @@
+{
+  "name": "QED - Multi-Agent Study Coach",
+  "short_name": "QED",
+  "description": "A multi-agent study coach powered by Claude that helps you think through hard problems using the Socratic method.",
+  "icons": [
+    {
+      "src": "/qed-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
