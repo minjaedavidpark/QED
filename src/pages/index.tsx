@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Layout from '@/components/Layout';
 
 export default function Home() {
@@ -52,9 +53,20 @@ export default function Home() {
     <Layout>
       {/* Hero Section */}
       <div className="text-center mb-24 pt-12">
-        <h1 className="text-7xl sm:text-8xl font-bold tracking-tight mb-6 animate-scale-in">
-          <span className="text-gradient">QED</span>
-        </h1>
+        <div className="flex items-center justify-center mb-6 space-x-6 animate-scale-in">
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 drop-shadow-lg">
+            <Image
+              src="/qed-logo.png"
+              alt="QED Logo"
+              fill
+              className="object-contain dark:brightness-110"
+              priority
+            />
+          </div>
+          <h1 className="text-7xl sm:text-8xl font-bold tracking-tight">
+            <span className="text-gradient">QED</span>
+          </h1>
+        </div>
         <p className="text-2xl sm:text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-4 tracking-tight animate-fade-in">
           Train Your Mind, Don&apos;t Just Get Answers
         </p>

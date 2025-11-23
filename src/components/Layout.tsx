@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTheme } from '@/context/ThemeContext';
 
 interface LayoutProps {
@@ -17,9 +18,15 @@ export default function Layout({ children, title }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3 group">
-              <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
-                🧠
-              </span>
+              <div className="relative w-10 h-10 group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/qed-logo.png"
+                  alt="QED Logo"
+                  fill
+                  className="object-contain dark:brightness-110"
+                  priority
+                />
+              </div>
               <span className="text-xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 QED
               </span>
