@@ -1,7 +1,9 @@
 # 🧠 QED – Multi-Agent Study & Exam Coach
 
-> **Track(s):**  
-> 🟦 Track 1 – Reasoning Systems (UofT AI)  
+> **🏆 3rd Place Winner – Anthropic AI Hackathon @ UofT (Nov 2025)**
+>
+> **Track(s):**
+> 🟦 Track 1 – Reasoning Systems (UofT AI)
 > 🟩 General Track – Open Innovation
 
 QED is a **multi-agent study coach** powered by Claude that trains students to _think_ through hard problems instead of just handing them the answer.
